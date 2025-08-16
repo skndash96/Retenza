@@ -30,7 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json({ customer: cust, loyalty: cl ?? null, transactions: txns });
 }
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { params } = await context;
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
