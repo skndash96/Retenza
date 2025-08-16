@@ -3,12 +3,13 @@ import { db, customers, customerLoyalty, transactions, loyaltyPrograms } from "@
 import { getUserFromSession } from "@/lib/session";
 import { eq, and, desc } from "drizzle-orm";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const customerId = Number(params.id);
+  const { id } = await params;
+  const customerId = Number(id);
 
   const [cust] = await db.select().from(customers).where(eq(customers.id, customerId)).limit(1);
   if (!cust) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
