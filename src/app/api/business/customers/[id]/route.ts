@@ -3,13 +3,15 @@ import { db, customers, customerLoyalty, transactions, loyaltyPrograms } from "@
 import { getUserFromSession } from "@/lib/session";
 import { eq, and, desc } from "drizzle-orm";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { shopId: string } }
+) {
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const { id } = await params;
-  const customerId = Number(id);
+  const customerId = Number(params.shopId);
 
   const [cust] = await db.select().from(customers).where(eq(customers.id, customerId)).limit(1);
   if (!cust) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
@@ -30,13 +32,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json({ customer: cust, loyalty: cl ?? null, transactions: txns });
 }
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { params } = await context;
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { shopId: string } }
+) {
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const customerId = Number(params.id);
+  const customerId = Number(params.shopId);
   const body = await req.json();
 
   if (!body.bill_amount) return NextResponse.json({ error: "bill_amount required" }, { status: 400 });
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
       tiers.sort((a, b) => a.points_to_unlock - b.points_to_unlock);
       for (const t of tiers) if (newPoints >= t.points_to_unlock) newTier = t.name;
     }
-    
+
     await db
       .update(customerLoyalty)
       .set({ points: newPoints, current_tier_name: newTier })
