@@ -5,13 +5,13 @@ import { eq, and, desc } from "drizzle-orm";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { shopId: string } }
+  { params }: { params: { id:string} }
 ) {
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const customerId = Number(params.shopId);
+  const customerId = Number(params.id);
 
   const [cust] = await db.select().from(customers).where(eq(customers.id, customerId)).limit(1);
   if (!cust) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
@@ -34,13 +34,13 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { shopId: string } }
+  { params }: { params: { id:string }}
 ) {
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const customerId = Number(params.shopId);
+  const customerId = Number(params.id);
   const body = await req.json();
 
   if (!body.bill_amount) return NextResponse.json({ error: "bill_amount required" }, { status: 400 });
@@ -76,7 +76,10 @@ export async function POST(
 
     await db
       .update(customerLoyalty)
-      .set({ points: newPoints, current_tier_name: newTier })
+      .set({ 
+        ...(customerLoyalty.points && { [customerLoyalty.points.name]: newPoints }),
+        ...(customerLoyalty.current_tier_name && { [customerLoyalty.current_tier_name.name]: newTier })
+      })
       .where(and(eq(customerLoyalty.customer_id, customerId), eq(customerLoyalty.business_id, businessId)));
   } else {
     let initialTier = null;
@@ -88,8 +91,8 @@ export async function POST(
     await db.insert(customerLoyalty).values({
       customer_id: customerId,
       business_id: businessId,
-      points: pointsAwarded,
-      current_tier_name: initialTier,
+      ...(customerLoyalty.points && { points: pointsAwarded }),
+      ...(customerLoyalty.current_tier_name && { current_tier_name: initialTier }),
     });
   }
 
