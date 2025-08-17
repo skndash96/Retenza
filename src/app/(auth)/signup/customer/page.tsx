@@ -73,23 +73,30 @@ export default function CustomerSignup() {
 
     const formattedPhoneNumber = parsedPhoneNumber.number as string;
 
-    try {
-      const result = await signInWithPhoneNumber(auth, formattedPhoneNumber, recaptchaVerifier);
-      setConfirmationResult(result);
-      setOtpSent(true);
-      setServerError(null);
-      toast.success('OTP has been sent to your phone number!');
-    } catch (error: any) {
-      if (error.code === 'auth/invalid-phone-number') {
-        toast.error('Invalid phone number format. Please ensure it is a valid 10-digit number.');
-        setServerError('Invalid phone number format. Please ensure it is a valid 10-digit number.');
-      } else {
-        toast.error('Failed to send OTP. Please try again.');
-        setServerError('Failed to send OTP. Please check your phone number and try again.');
-      }
-    } finally {
-      setLoading(false);
+try {
+  const result = await signInWithPhoneNumber(auth, formattedPhoneNumber, recaptchaVerifier);
+  setConfirmationResult(result);
+  setOtpSent(true);
+  setServerError(null);
+  toast.success('OTP has been sent to your phone number!');
+} catch (error: unknown) {
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    const firebaseError = error as { code: string };
+
+    if (firebaseError.code === 'auth/invalid-phone-number') {
+      toast.error('Invalid phone number format. Please ensure it is a valid 10-digit number.');
+      setServerError('Invalid phone number format. Please ensure it is a valid 10-digit number.');
+    } else {
+      toast.error('Failed to send OTP. Please try again.');
+      setServerError('Failed to send OTP. Please check your phone number and try again.');
     }
+  } else {
+    toast.error('An unexpected error occurred. Please try again.');
+    setServerError('An unexpected error occurred. Please try again.');
+  }
+} finally {
+  setLoading(false);
+}
   };
 
   const onSubmit = async (data: FormData) => {
@@ -117,8 +124,8 @@ export default function CustomerSignup() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        toast.error(errorData.error || errorData.details || 'An unknown error occurred. PLease try again.');
-        setServerError(errorData.error || errorData.details || 'An unknown error occurred.');
+        toast.error(errorData.error ?? errorData.details ?? 'An unknown error occurred. PLease try again.');
+        setServerError(errorData.error ?? errorData.details ?? 'An unknown error occurred.');
       } else {
         toast.success('Signup successful! Redirecting to login...');
         router.push('/login/customer');

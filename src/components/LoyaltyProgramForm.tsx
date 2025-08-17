@@ -259,13 +259,13 @@ const RewardFields = ({
     name: `tiers.${tierIndex}.rewards`,
   });
 
-  const watchedRewards = useWatch({ control, name: `tiers.${tierIndex}.rewards` }) || [];
+  const watchedRewards = useWatch({ control, name: `tiers.${tierIndex}.rewards` }) ?? [];
 
   return (
     <div className="space-y-4 mt-4">
       <h5 className="text-md font-medium">Rewards for this Tier</h5>
       {rewardFields.map((reward, rewardIndex) => {
-        const currentReward = watchedRewards?.[rewardIndex] || {};
+        const currentReward = watchedRewards?.[rewardIndex] ?? {};
         return (
           <div key={reward.id} className="border-l-2 border-gray-200 pl-3 py-3 space-y-3 rounded-sm bg-white">
             <div className="flex justify-between items-center">

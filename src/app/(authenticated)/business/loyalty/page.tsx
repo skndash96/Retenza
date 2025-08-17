@@ -193,7 +193,7 @@ export default function LoyaltyPage() {
 
                   const payload: any = { tier: { name: newTierName, points_to_unlock: Number(newTierPoints), rewards: newRewards } };
                   if(!program){
-                    const points_rate = parseFloat(prompt('Enter points_rate for new program') || '0');
+                    const points_rate = parseFloat(prompt('Enter points_rate for new program') ?? '0');
                     if(isNaN(points_rate)) return alert('Invalid points rate');
                     payload.points_rate = points_rate;
                   }
@@ -207,11 +207,11 @@ export default function LoyaltyPage() {
                     const data = await res.json();
                     if(res.ok){
                       alert('Tier added!');
-                      loadProgram();
+                      void loadProgram();
                       setShowTierForm(false);
                       setNewTierName(''); setNewTierPoints(''); setNewRewards([]);
                     } else {
-                      alert(data.error || 'Error adding tier');
+                      alert(data.error ?? 'Error adding tier');
                     }
                   } catch(err){
                     console.error(err);

@@ -28,10 +28,9 @@ const businessInfoSchema = z.object({
   message: "Passwords don't match.",
   path: ["confirmPassword"],
 });
-// Schema is defined in the LoyaltyProgramForm component
 
 type BusinessInfoData = z.infer<typeof businessInfoSchema>;
-type LoyaltyProgramData = any; // Type is defined in the LoyaltyProgramForm component
+type LoyaltyProgramData = any; 
 
 export default function BusinessSignupPage() {
   const router = useRouter();

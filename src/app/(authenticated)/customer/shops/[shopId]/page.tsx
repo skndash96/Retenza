@@ -112,7 +112,7 @@ export default function ShopDetailsPage({ params }: { params: Promise<{ shopId: 
   }
 
   const { shop, loyaltyProgram, loyalty, transactions } = shopData;
-  const currentPoints = loyalty?.points || 0;
+  const currentPoints = loyalty?.points ?? 0;
   
   const nextTier = loyaltyProgram?.tiers
     .filter(tier => tier.points_to_unlock > currentPoints)

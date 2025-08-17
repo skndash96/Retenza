@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchSession();
+    void fetchSession();
   }, []);
 
   const login = (userData: { user: UserSession; role: UserRole }) => {
