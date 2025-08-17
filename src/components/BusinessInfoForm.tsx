@@ -21,7 +21,7 @@ export function BusinessInfoForm({
   isLoading,
   schema,
 }: {
-  onSubmit: (data: unknown) => void;
+  onSubmit: (data: any) => void | Promise<void>;
   isLoading: boolean;
   schema: z.ZodSchema;
 }) {
