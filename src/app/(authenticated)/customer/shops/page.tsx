@@ -39,17 +39,18 @@ export default function ShopsPage() {
             toast.error('Failed to load shops');
             throw new Error('Failed to fetch shops.');
           }
-          const data = await response.json();
-          setShops(data);
-        } catch (err: any) {
-          toast.error(err.message || 'Error loading shops');
-          setError(err.message);
+                      const data = await response.json() as Shop[];
+            setShops(data);
+        } catch (err: unknown) {
+          const errorMessage = (err as Error)?.message ?? 'Error loading shops';
+          toast.error(errorMessage);
+          setError(errorMessage);
         } finally {
           setShopsLoading(false);
         }
       };
 
-      fetchShops();
+      void fetchShops();
     }
   }, [authLoading, user, role]);
 

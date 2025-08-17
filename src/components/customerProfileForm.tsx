@@ -23,8 +23,8 @@ interface CustomerProfileFormProps {
 export default function CustomerProfileForm({ user }: CustomerProfileFormProps) {
   const router = useRouter();
 
-  const [name, setName] = useState(user.name || '');
-  const [gender, setGender] = useState(user.gender || '');
+  const [name, setName] = useState(user.name ?? '');
+  const [gender, setGender] = useState(user.gender ?? '');
   const [dob, setDob] = useState(user.dob ? new Date(user.dob).toISOString().split('T')[0] : '');
   const [anniversary, setAnniversary] = useState(user.anniversary ? new Date(user.anniversary).toISOString().split('T')[0] : '');
   const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +56,7 @@ export default function CustomerProfileForm({ user }: CustomerProfileFormProps) 
         router.push('/customer');
         router.refresh(); 
       } else {
-        setMessage(data.error || 'Failed to save profile. Please try again.');
+        setMessage(data.error ?? 'Failed to save profile. Please try again.');
       }
     } catch (error) {
       console.error('Error saving profile:', error);

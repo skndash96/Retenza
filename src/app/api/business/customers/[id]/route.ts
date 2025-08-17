@@ -1,17 +1,19 @@
-import { NextResponse, NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { db, customers, customerLoyalty, transactions, loyaltyPrograms } from "@/server/db";
 import { getUserFromSession } from "@/lib/session";
 import { eq, and, desc } from "drizzle-orm";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id:string} }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const customerId = Number(params.id);
+  const customerId = Number(id);
 
   const [cust] = await db.select().from(customers).where(eq(customers.id, customerId)).limit(1);
   if (!cust) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
@@ -34,14 +36,15 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id:string }}
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getUserFromSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businessId = session.id;
-  const customerId = Number(params.id);
-  const body = await req.json();
+  const customerId = Number(id);
+  const body = await req.json() as { bill_amount?: number };
 
   if (!body.bill_amount) return NextResponse.json({ error: "bill_amount required" }, { status: 400 });
 
@@ -69,7 +72,7 @@ export async function POST(
     let newTier = cl.current_tier_name;
 
     if (lp?.tiers?.length) {
-      const tiers = lp.tiers as any[];
+      const tiers = lp.tiers as Array<{ points_to_unlock: number; name: string }>;
       tiers.sort((a, b) => a.points_to_unlock - b.points_to_unlock);
       for (const t of tiers) if (newPoints >= t.points_to_unlock) newTier = t.name;
     }
@@ -84,7 +87,7 @@ export async function POST(
   } else {
     let initialTier = null;
     if (lp?.tiers?.length) {
-      const tiers = lp.tiers as any[];
+      const tiers = lp.tiers as Array<{ points_to_unlock: number; name: string }>;
       tiers.sort((a, b) => a.points_to_unlock - b.points_to_unlock);
       for (const t of tiers) if (pointsAwarded >= t.points_to_unlock) initialTier = t.name;
     }

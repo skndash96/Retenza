@@ -28,7 +28,7 @@ type PostAddResponse = {
     phone_number: string;
     name?: string | null;
   };
-  loyalty?: any;
+  loyalty?: unknown;
 };
 
 export default function BusinessCustomersPage() {
@@ -50,7 +50,7 @@ export default function BusinessCustomersPage() {
         toast.error('Failed to fetch customers');
         throw new Error('Failed to fetch customers');
       } 
-      const data: GetCustomersResponse = await res.json();
+      const data = await res.json() as GetCustomersResponse;
       setCustomers(Array.isArray(data?.customers) ? data.customers : []);
     } catch (err) {
       console.error(err);
@@ -67,7 +67,7 @@ export default function BusinessCustomersPage() {
     }
     const phoneNumber = parsePhoneNumberFromString(phoneInput.trim(), 'IN');
 
-    if (!phoneNumber || !phoneNumber.isValid()) {
+    if (!phoneNumber?.isValid()) {
       toast.error('Invalid phone number format.');
       return;
     }
@@ -82,11 +82,11 @@ export default function BusinessCustomersPage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        toast.error(errData?.error || 'Failed to add/find customer');
+        toast.error(errData?.error ?? 'Failed to add/find customer');
         return;
       }
 
-      const data: PostAddResponse = await res.json();
+      const data = await res.json() as PostAddResponse;
 
       setShowAddModal(false);
       setPhoneInput('');
@@ -103,15 +103,15 @@ export default function BusinessCustomersPage() {
       if (!user || role !== 'business') {
         router.push('/login/business');
       } else {
-        loadCustomers();
+        void loadCustomers();
       }
     }
-  }, [loading, user, role]);
+  }, [loading, user, role, router]);
 
   const filtered = useMemo(() => {
     const q = search.trim();
     if (!q) return customers;
-    return customers.filter((c) => c.phone_number?.includes(q));
+    return customers.filter((c) => c.phone_number?.includes(q) ?? false);
   }, [customers, search]);
 
   if (loading || loadingCustomers) {

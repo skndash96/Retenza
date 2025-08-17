@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import { businesses, loyaltyPrograms, sessions } from "@/server/db/schema";
+import { businesses, loyaltyPrograms } from "@/server/db/schema";
 import type { Tier } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       const tiersWithIds: Tier[] = tiers.map((tier, index) => ({
         ...tier,
         id: index + 1,
-        rewards: tier.rewards.map((reward: any) => ({
+        rewards: tier.rewards.map((reward: unknown) => ({
           ...reward,
           value: reward.value !== undefined ? reward.value : 0,
           description: reward.description !== undefined ? reward.description : "",

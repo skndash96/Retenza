@@ -13,7 +13,7 @@ export default function BusinessMissionsPage() {
   const { user, role, loading } = useAuthSession();
   const router = useRouter();
 
-  const [missions, setMissions] = useState<any[]>([]);
+  const [missions, setMissions] = useState<Array<{ id: number; title: string; description: string; applicable_tiers: string[]; expires_at: string }>>([]);
   const [availableTiers, setAvailableTiers] = useState<string[]>([]);
   const [loadingMissions, setLoadingMissions] = useState(false);
 
@@ -28,7 +28,7 @@ export default function BusinessMissionsPage() {
     try {
       setLoadingMissions(true);
       const res = await fetch('/api/business/missions');
-      const data = await res.json();
+      const data = await res.json() as Array<{ id: number; title: string; description: string; applicable_tiers: string[]; expires_at: string }>;
       setMissions(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error('Failed to load missions. Please try again.');
@@ -42,7 +42,7 @@ export default function BusinessMissionsPage() {
   async function loadTiers() {
     try {
       const res = await fetch('/api/business/missions/tiers');
-      const data = await res.json();
+      const data = await res.json() as string[];
       setAvailableTiers(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error('Failed to load tiers. Please try again.');
@@ -70,14 +70,14 @@ export default function BusinessMissionsPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const errData = await res.json();
-        toast.error(errData.error || 'Failed to create mission');
+        const errData = await res.json() as { error?: string };
+        toast.error(errData.error ?? 'Failed to create mission');
         return;
       }
       await res.json();
       toast.success('Mission created successfully!');
       resetForm();
-      loadMissions();
+      void loadMissions();
     } catch (err) {
       console.error(err);
       toast.error('Error creating mission');
@@ -94,11 +94,11 @@ export default function BusinessMissionsPage() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
-        const errData = await res.json();
-        toast.error(errData.error || 'Failed to delete mission');
+        const errData = await res.json() as { error?: string };
+        toast.error(errData.error ?? 'Failed to delete mission');
         return;
       }
-      loadMissions();
+      void loadMissions();
     } catch (err) {
       console.error(err);
       toast.error('Error deleting mission');
@@ -118,11 +118,11 @@ export default function BusinessMissionsPage() {
     if (!loading) {
       if (!user || role !== 'business') router.push('/login/business');
       else {
-        loadMissions();
-        loadTiers();
+        void loadMissions();
+        void loadTiers();
       }
     }
-  }, [loading, user, role]);
+  }, [loading, user, role, router]);
 
   if (loading || loadingMissions) return <div className="min-h-screen flex items-center justify-center">Loading missions…</div>;
 
@@ -184,7 +184,7 @@ export default function BusinessMissionsPage() {
               {mission.applicable_tiers.length > 0 && (
                   <p className="text-sm text-gray-500">
                     Tiers: {mission.applicable_tiers
-                      .map(t => (typeof t === "object" && t !== null ? t.name : String(t)))
+                      .map((t: unknown) => (typeof t === "object" && t !== null ? (t as { name: string }).name : String(t)))
                       .join(', ')}
                   </p>
                 )}

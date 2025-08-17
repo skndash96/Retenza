@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getCustomerFromSession, getUserFromSession } from '@/lib/session'; 
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const customer = await getCustomerFromSession();
     if (customer) {

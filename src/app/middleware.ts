@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { sessions } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -13,10 +14,10 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname ?? "";
 
   if (!sessionId) {
-    if (pathname.startsWith(PROTECTED_ROUTES.business[0]!)) {
+    if (pathname.startsWith(PROTECTED_ROUTES.business[0])) {
       return NextResponse.redirect(new URL("/login/business", req.url));
     }
-    if (pathname.startsWith(PROTECTED_ROUTES.customer[0]!)) {
+    if (pathname.startsWith(PROTECTED_ROUTES.customer[0])) {
       return NextResponse.redirect(new URL("/login/customer", req.url));
     }
     if (pathname.startsWith("/login") || pathname.startsWith("/signup")) {
@@ -36,8 +37,8 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
-const isBusinessRoute = pathname.startsWith(PROTECTED_ROUTES.business[0]!);
-const isCustomerRoute = pathname.startsWith(PROTECTED_ROUTES.customer[0]!);
+const isBusinessRoute = pathname.startsWith(PROTECTED_ROUTES.business[0]);
+const isCustomerRoute = pathname.startsWith(PROTECTED_ROUTES.customer[0]);
 
   if (isBusinessRoute && session.role !== 'business') {
     return NextResponse.redirect(new URL("/login/business", req.url));

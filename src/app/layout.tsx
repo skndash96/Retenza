@@ -1,15 +1,8 @@
 import "../styles/globals.css";
 
-import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-const metadata: Metadata = {
-  title: "Retenza",
-  description: "Loyalty Platform",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-};
 
 const geist = Geist({
   subsets: ["latin"],

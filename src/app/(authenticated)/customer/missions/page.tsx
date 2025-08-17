@@ -39,18 +39,19 @@ export default function MissionsPage() {
             toast.error('Failed to load missions');
             throw new Error('Failed to fetch missions.');
           }
-          const data = await response.json();
+          const data = await response.json() as Campaign[];
           toast.success('Missions loaded successfully');
           setMissions(data);
-        } catch (err: any) {
-          toast.error(err.message || 'Error loading missions');
-          setError(err.message);
+        } catch (err: unknown) {
+          const errorMessage = (err as Error)?.message ?? 'Error loading missions';
+          toast.error(errorMessage);
+          setError(errorMessage);
         } finally {
           setMissionsLoading(false);
         }
       };
 
-      fetchMissions();
+      void fetchMissions();
     }
   }, [user, role]);
 

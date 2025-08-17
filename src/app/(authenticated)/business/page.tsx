@@ -46,14 +46,15 @@ export default function BusinessDashboardPage() {
       const res = await fetch('/api/business/dashboard', { cache: 'no-store' });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        toast.error(j?.error || `Failed to load dashboard (${res.status})`);
-        throw new Error(j?.error || `Failed to load dashboard (${res.status})`);
+        toast.error(j?.error ?? `Failed to load dashboard (${res.status})`);
+        throw new Error(j?.error ?? `Failed to load dashboard (${res.status})`);
       }
       const json = (await res.json()) as DashboardPayload;
       setPayload(json);
-    } catch (e: any) {
-      toast.error(e?.message || 'Failed to load dashboard');
-      setError(e?.message || 'Failed to load dashboard');
+    } catch (e: unknown) {
+      const errorMessage = (e as Error)?.message ?? 'Failed to load dashboard';
+      toast.error(errorMessage);
+      setError(errorMessage);
       setPayload(null);
     } finally {
       setLoading(false);
@@ -66,8 +67,8 @@ export default function BusinessDashboardPage() {
       router.push('/login/business');
       return;
     }
-    fetchDashboard();
-  }, [sessionLoading, user, role]);
+    void fetchDashboard();
+  }, [sessionLoading, user, role, router]);
 
   const { totalCustomers, avgPointsPerCustomer, tierData, topPoints, recentActivity, barSeries, weekVsMonthChangePct } = useMemo(() => {
     const empty = { totalCustomers: 0, avgPointsPerCustomer: 0, tierData: [], topPoints: [], recentActivity: [], barSeries: [], weekVsMonthChangePct: 0 };
@@ -80,20 +81,20 @@ export default function BusinessDashboardPage() {
     const avgPoints = total ? Math.round((totalPoints / total) * 10) / 10 : 0;
 
     const tierMap = new Map<string, number>();
-    rows.forEach(r => { const tier = (r.cl?.current_tier_name || 'Unassigned').trim(); tierMap.set(tier, (tierMap.get(tier) || 0) + 1); });
+    rows.forEach(r => { const tier = (r.cl?.current_tier_name ?? 'Unassigned').trim(); tierMap.set(tier, (tierMap.get(tier) ?? 0) + 1); });
     const tiers = Array.from(tierMap.entries()).map(([name, value]) => ({ name, value }));
 
-    const leaderboard = rows.map(r => ({ id: r.c.id, name: r.c.name || `Customer #${r.c.id}`, points: r.cl?.points ?? 0 }))
+    const leaderboard = rows.map(r => ({ id: r.c.id, name: r.c.name ?? `Customer #${r.c.id}`, points: r.cl?.points ?? 0 }))
       .sort((a, b) => b.points - a.points).slice(0, 5);
 
-    const recents = rows.map(r => ({ id: r.c.id, name: r.c.name || `Customer #${r.c.id}`, last_txn_at: r.last_txn_at }))
+    const recents = rows.map(r => ({ id: r.c.id, name: r.c.name ?? `Customer #${r.c.id}`, last_txn_at: r.last_txn_at }))
       .sort((a, b) => (b.last_txn_at ? new Date(b.last_txn_at).getTime() : 0) - (a.last_txn_at ? new Date(a.last_txn_at).getTime() : 0))
       .slice(0, 8);
 
-    const week = payload.transactionsLastWeek || 0;
-    const month = payload.transactionsLastMonth || 0;
+    const week = payload.transactionsLastWeek ?? 0;
+    const month = payload.transactionsLastMonth ?? 0;
     const bars = [{ label: 'Last Week', value: week }, { label: 'Last Month', value: month }];
-    const baseline = month / 4 || 0;
+    const baseline = month / 4;
     const changePct = baseline ? Math.round(((week - baseline) / baseline) * 100) : 0;
 
     return { totalCustomers: total, avgPointsPerCustomer: avgPoints, tierData: tiers, topPoints: leaderboard, recentActivity: recents, barSeries: bars, weekVsMonthChangePct: changePct };

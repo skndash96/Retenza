@@ -13,7 +13,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin({phone, password});
+    void onLogin({phone, password});
   };
 
   return (

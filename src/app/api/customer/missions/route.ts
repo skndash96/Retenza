@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { campaigns, customerLoyalty } from '@/server/db/schema';
 import { getCustomerFromSession } from '@/lib/session';
 import { eq, and, sql } from 'drizzle-orm';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const sessionUser = await getCustomerFromSession();
 
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       }
       else {
         const loyaltyRecord = loyaltyMap.get(campaign.business_id);
-        if (loyaltyRecord && loyaltyRecord.current_tier_name) {
+        if (loyaltyRecord?.current_tier_name) {
           if (campaign.applicable_tiers.includes(loyaltyRecord.current_tier_name)) {
             isEligible = true;
           }

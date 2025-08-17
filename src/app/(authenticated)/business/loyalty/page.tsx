@@ -43,7 +43,7 @@ export default function LoyaltyPage() {
     try {
       setLoadingProgram(true);
       const res = await fetch('/api/business/loyalty');
-      const data = await res.json();
+      const data = await res.json() as LoyaltyProgram[];
       if (Array.isArray(data) && data.length > 0) setProgram(data[0]);
       else setProgram(null);
     } catch (err) {
@@ -63,12 +63,12 @@ export default function LoyaltyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tierName }),
       });
-      const data = await res.json();
+      const data = await res.json() as { message?: string; error?: string };
       if (res.ok) {
-        toast.success(data.message || 'Tier deleted');
-        loadProgram();
+        toast.success(data.message ?? 'Tier deleted');
+        void loadProgram();
       } else {
-        toast.error(data.error || 'Failed to delete tier');
+        toast.error(data.error ?? 'Failed to delete tier');
       }
     } catch (err) {
       console.error(err);
@@ -84,12 +84,12 @@ export default function LoyaltyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tierName, reward }),
       });
-      const data = await res.json();
+      const data = await res.json() as { message?: string; error?: string };
       if (res.ok) {
-        toast.success(data.message || 'Reward deleted');
-        loadProgram();
+        toast.success(data.message ?? 'Reward deleted');
+        void loadProgram();
       } else {
-        toast.error(data.error || 'Failed to delete reward');
+        toast.error(data.error ?? 'Failed to delete reward');
       }
     } catch (err) {
       console.error(err);
@@ -100,9 +100,9 @@ export default function LoyaltyPage() {
   useEffect(() => {
     if (!loading) {
       if (!user || role !== 'business') router.push('/login/business');
-      else loadProgram();
+      else void loadProgram();
     }
-  }, [loading, user, role]);
+  }, [loading, user, role, router]);
 
   if (loading || loadingProgram) return <div>Loading loyalty program...</div>;
 

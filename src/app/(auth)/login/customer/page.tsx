@@ -12,7 +12,7 @@ const handleLogin = async (data: { phone: string; password: string }) => {
   const phoneNumber = parsePhoneNumberFromString(data.phone, 'IN');
   let formattedPhone = data.phone;
 
-  if (phoneNumber && phoneNumber.isValid()) {
+      if (phoneNumber?.isValid()) {
     formattedPhone = phoneNumber.format('E.164');
   } else {
     toast.error('Invalid phone number format.');
@@ -31,9 +31,9 @@ const handleLogin = async (data: { phone: string; password: string }) => {
       router.push('/customer');
     } else {
       const contentType = res.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        const errorData = await res.json();
-        toast.error(errorData.error || 'Login failed. Please try again.');
+             if (contentType?.includes("application/json")) {
+         const errorData = await res.json() as { error?: string };
+         toast.error(errorData.error ?? 'Login failed. Please try again.');
       } else {
         const errorText = await res.text();
         toast.error(errorText || 'Login failed. Please try again.');
@@ -63,7 +63,7 @@ const handleLogin = async (data: { phone: string; password: string }) => {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-600">
-              Don't have an account ?{' '}
+                             Don&apos;t have an account ?{' '}
               <Link
                 href="/signup/customer"
                 className="text-amber-600 font-medium hover:underline"

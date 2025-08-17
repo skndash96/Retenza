@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { businesses } from '@/server/db/schema';
 import { getCustomerFromSession } from '@/lib/session';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const sessionUser = await getCustomerFromSession();
     if (!sessionUser) {

@@ -41,18 +41,19 @@ export default function CustomerDashboard() {
             toast.error('Failed to load dashboard data');
             throw new Error('Failed to fetch dashboard data.');
           } 
-          const data = await response.json();
-          setShops(data.shops);
-        } catch (err: any) {
-          toast.error(err.message || 'Error loading dashboard data');
-          setError(err.message);
+                      const data = await response.json() as { shops: Shop[] };
+            setShops(data.shops);
+        } catch (err: unknown) {
+          const errorMessage = (err as Error)?.message ?? 'Error loading dashboard data';
+          toast.error(errorMessage);
+          setError(errorMessage);
         } finally {
           setPageLoading(false);
         }
       };
-      fetchDashboardData();
+      void fetchDashboardData();
     }
-  }, [authLoading, user, role]);
+  }, [authLoading, user, role, router]);
 
   if (authLoading || pageLoading) {
     return (
@@ -119,7 +120,7 @@ export default function CustomerDashboard() {
           </Carousel>
         ) : (
           <p className="text-center text-slate-500 mt-4">
-            You haven't made a purchase yet. Start earning rewards today!
+                         You haven&apos;t made a purchase yet. Start earning rewards today!
           </p>
         )}
 

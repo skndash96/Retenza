@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { businesses, customerLoyalty, transactions, loyaltyPrograms } from '@/server/db/schema';
 import { getCustomerFromSession } from '@/lib/session';
 import { eq, and } from 'drizzle-orm';
 
-export async function GET(req: NextRequest, { params }: { params: { shopId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ shopId: string }> }) {
   try {
     const sessionUser = await getCustomerFromSession();
     const { shopId: shopIdString } = await params;
@@ -47,12 +47,12 @@ export async function GET(req: NextRequest, { params }: { params: { shopId: stri
         business_type: shopData.business_type,
         address: shopData.address,
       },
-      loyaltyProgram: shopData.loyaltyProgram || null,
-      loyalty: customerLoyaltyRecord || null,
+      loyaltyProgram: shopData.loyaltyProgram ?? null,
+      loyalty: customerLoyaltyRecord ?? null,
       transactions: customerTransactions,
     });
   } catch (error) {
-    console.error(`Error fetching shop details for shopId ${params.shopId}:`, error);
+    console.error(`Error fetching shop details:`, error);
     return NextResponse.json({ error: 'Failed to fetch shop details.' }, { status: 500 });
   }
 }

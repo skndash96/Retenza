@@ -15,7 +15,7 @@ export default function BusinessNavbar() {
   const { logout } = useAuthSession();
 
   const handleLogout = async () => {
-    await logout();
+    logout();
     router.push('/login/business');
   };
 

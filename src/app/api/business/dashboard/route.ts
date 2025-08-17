@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db, customers, customerLoyalty, transactions, loyaltyPrograms } from "@/server/db";
+import { type NextRequest, NextResponse } from "next/server";
+import { db, customers, customerLoyalty, transactions } from "@/server/db";
 import { getUserFromSession } from "@/lib/session";
 import { eq, sql, and, desc, gte } from "drizzle-orm";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const business = await getUserFromSession();
   if (!business) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const businessId = business.id;

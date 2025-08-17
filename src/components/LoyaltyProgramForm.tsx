@@ -310,10 +310,10 @@ const RewardFields = ({
                   <Input id={`tiers.${tierIndex}.rewards.${rewardIndex}.value`} type="number" {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.value`, { valueAsNumber: true })} disabled={isLoading} className="w-full min-w-0" />
                   {Array.isArray(errors?.tiers) &&
                     errors.tiers[tierIndex] &&
-                    Array.isArray((errors.tiers[tierIndex] as any)?.rewards) &&
-                    (errors.tiers[tierIndex] as any).rewards[rewardIndex]?.value && (
+                    Array.isArray((errors.tiers[tierIndex])?.rewards) &&
+                    (errors.tiers[tierIndex]).rewards[rewardIndex]?.value && (
                       <p className="text-red-500 text-sm mt-1">
-                        {String((errors.tiers[tierIndex] as any).rewards[rewardIndex]?.value?.message)}
+                        {String((errors.tiers[tierIndex]).rewards[rewardIndex]?.value?.message)}
                       </p>
                   )}
                 </div>

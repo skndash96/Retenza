@@ -2,7 +2,7 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+// z is not used since schema is passed as prop
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,24 +14,7 @@ const INDUSTRY_OPTIONS = [
   "Electronics", "Fitness", "Automotive", "Other",
 ];
 
-const businessInfoSchema = z.object({
-  name: z.string().min(2, 'Business name is required.'),
-  phone_number: z.string().regex(
-    /^(\+?\d{1,3})?[-.\s]?(\(?\d{1,4}\)?)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/,
-    "Invalid phone number format."
-  ),
-  contact_number_2: z.string().regex(
-    /^(\+?\d{1,3})?[-.\s]?(\(?\d{1,4}\)?)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/,
-    "Invalid phone number format."
-  ).optional().or(z.literal('')),
-  address: z.string().min(5, 'Address is required.'),
-  business_type: z.string().min(1, 'Business type is required.'),
-  password: z.string().min(8, 'Password must be at least 8 characters.'),
-  confirmPassword: z.string().min(8, 'Please confirm your password.'),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match.",
-  path: ["confirmPassword"],
-});
+// Schema is passed as a prop, so we don't need to define it here
 
 export function BusinessInfoForm({
   onSubmit,

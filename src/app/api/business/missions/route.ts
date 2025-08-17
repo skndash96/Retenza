@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { campaigns } from "@/server/db/schema";
 import { getUserFromSession } from "@/lib/session";
 import { eq, desc, and } from "drizzle-orm";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const businessUser = await getUserFromSession();
     if (!businessUser) {

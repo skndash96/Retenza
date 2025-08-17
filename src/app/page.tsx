@@ -35,7 +35,7 @@ export default function LandingPage() {
             <motion.div variants={fadeUp} className="space-y-6">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-slate-900">
                 RETENZA
-                <span className="block text-amber-600">Win the war for your customers' loyalty.</span>
+                <span className="block text-amber-600">Win the war for your customers&apos; loyalty.</span>
               </h1>
 
               <p className="text-lg text-slate-600 max-w-xl">

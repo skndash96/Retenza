@@ -64,7 +64,7 @@ export default function CustomerSignup() {
     }
     
     const parsedPhoneNumber = parsePhoneNumberFromString(phoneNumber, 'IN');
-    if (!parsedPhoneNumber || !parsedPhoneNumber.isValid()) {
+    if (!parsedPhoneNumber?.isValid()) {
       toast.error('Invalid phone number. Please enter a valid Indian number.');
       setServerError('Invalid phone number. Please enter a valid Indian number.');
       setLoading(false);

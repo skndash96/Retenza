@@ -51,23 +51,27 @@ export default function CustomerDetailPage() {
       if (!user || role !== 'business') {
         router.push('/login/business');
       } else {
-        fetchCustomer();
+        void fetchCustomer();
       }
     }
-  }, [loading, user, role]);
+  }, [loading, user, role, router]);
 
   async function fetchCustomer() {
     setLoadingCustomer(true);
     try {
-      const res = await fetch(`/api/business/customers/${customerId}`);
+      const res = await fetch(`/api/business/customers/${String(customerId)}`);
       if (!res.ok){
         toast.error('Failed to fetch customer details');
         throw new Error('Failed to fetch customer');
       } 
-      const data = await res.json();
+      const data = await res.json() as {
+        customer: Customer;
+        loyalty: Loyalty;
+        transactions?: Transaction[];
+      };
       setCustomer(data.customer);
       setLoyalty(data.loyalty);
-      setTransactions(data.transactions || []);
+      setTransactions(data.transactions ?? []);
     } catch (err) {
       console.error(err);
       setCustomer(null);
@@ -88,7 +92,7 @@ export default function CustomerDetailPage() {
     setError('');
 
     try {
-      const res = await fetch(`/api/business/customers/${customerId}`, {
+      const res = await fetch(`/api/business/customers/${String(customerId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bill_amount: Number(billAmount) }),
@@ -100,10 +104,11 @@ export default function CustomerDetailPage() {
       setTransactions((prev) => [data.transaction, ...prev]);
       await fetchCustomer();
       setBillAmount('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Failed to add transaction. Something went wrong.');
-      setError(err.message || 'Something went wrong');
+      const errorMessage = (err as Error)?.message ?? 'Failed to add transaction. Something went wrong.';
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setSubmitting(false);
     }

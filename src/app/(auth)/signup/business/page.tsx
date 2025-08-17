@@ -28,22 +28,10 @@ const businessInfoSchema = z.object({
   message: "Passwords don't match.",
   path: ["confirmPassword"],
 });
-const loyaltyProgramSchema = z.object({
-  points_rate: z.number().int().positive('Points rate must be a positive integer.').min(1, 'Points rate must be at least 1.'),
-  description: z.string().min(10, 'A loyalty program description is required.'),
-  tiers: z.array(z.object({
-    name: z.string().min(1, 'Tier name is required.'),
-    points_to_unlock: z.number().int().positive('Points must be a positive integer.').min(1, 'Points must be at least 1.'),
-    rewards: z.array(z.discriminatedUnion('reward_type', [
-      z.object({ reward_type: z.literal('Free Item'), description: z.string().min(1, 'Item name is required.'), value: z.number().optional() }),
-      z.object({ reward_type: z.literal('Discount'), description: z.string().optional(), value: z.number().int().positive().min(1).max(100) }),
-      z.object({ reward_type: z.literal('Cashback'), description: z.string().optional(), value: z.number().int().positive().min(1) }),
-    ])).min(1, 'At least one reward is required per tier.'),
-  })).min(1, 'At least one loyalty tier is required.'),
-});
+// Schema is defined in the LoyaltyProgramForm component
 
 type BusinessInfoData = z.infer<typeof businessInfoSchema>;
-type LoyaltyProgramData = z.infer<typeof loyaltyProgramSchema>;
+type LoyaltyProgramData = any; // Type is defined in the LoyaltyProgramForm component
 
 export default function BusinessSignupPage() {
   const router = useRouter();
@@ -70,7 +58,7 @@ export default function BusinessSignupPage() {
     setError(null);
     try {
       const parsedPhoneNumber = parsePhoneNumberFromString(data.phone_number, 'IN');
-      if (!parsedPhoneNumber || !parsedPhoneNumber.isValid()) {
+             if (!parsedPhoneNumber?.isValid()) {
         const errorMessage = 'Invalid phone number. Please enter a valid Indian number.';
         setError(errorMessage);
         toast.error(errorMessage);
@@ -84,8 +72,8 @@ export default function BusinessSignupPage() {
       setBusinessData(data);
       setStep(1.5);
       toast.success('OTP sent! Please check your phone.');
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to send OTP. Please try again.';
+         } catch (err: unknown) {
+       const errorMessage = (err as Error)?.message ?? 'Failed to send OTP. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -97,10 +85,10 @@ export default function BusinessSignupPage() {
     setOtpLoading(true);
     setError(null);
     try {
-      if (!confirmationResult) throw new Error("OTP verification flow broken.");
-      await confirmationResult.confirm(otp);
-      
-      const firebaseUser = await auth.currentUser;
+             if (!confirmationResult) throw new Error("OTP verification flow broken.");
+       await confirmationResult.confirm(otp);
+       
+       const firebaseUser = auth.currentUser;
       const firebaseIdToken = await firebaseUser!.getIdToken();
       
       if (!businessData) throw new Error("Business data is missing.");
@@ -110,17 +98,17 @@ export default function BusinessSignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...businessData, firebaseIdToken }),
       });
-      const result = await res.json();
-      if (!res.ok) {
-        const errorMessage = result.error || 'Something went wrong during business info setup.';
+             const result = await res.json() as { error?: string };
+       if (!res.ok) {
+         const errorMessage = result.error ?? 'Something went wrong during business info setup.';
         toast.error(errorMessage);
         setError(errorMessage);
       } else {
         toast.success('Phone verified! Proceeding to loyalty setup.');
         setStep(2);
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to verify OTP.';
+         } catch (err: unknown) {
+       const errorMessage = (err as Error)?.message ?? 'Failed to verify OTP.';
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -140,17 +128,17 @@ export default function BusinessSignupPage() {
         body: JSON.stringify(data),
       });
 
-      const result = await res.json();
-      if (!res.ok) {
-        const errorMessage = result.error || 'Something went wrong during loyalty program setup.';
+             const result = await res.json() as { error?: string };
+       if (!res.ok) {
+         const errorMessage = result.error ?? 'Something went wrong during loyalty program setup.';
         toast.error(errorMessage);
         setError(errorMessage);
       } else {
         toast.success('Loyalty program created! Redirecting to dashboard.');
         router.push('/business'); 
       }
-    } catch (err) {
-      const errorMessage = 'Failed to complete loyalty setup. Please try again.';
+         } catch (_err) {
+       const errorMessage = 'Failed to complete loyalty setup. Please try again.';
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {

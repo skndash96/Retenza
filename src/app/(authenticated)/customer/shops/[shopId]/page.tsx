@@ -78,16 +78,16 @@ export default function ShopDetailsPage({ params }: { params: Promise<{ shopId: 
           if (!response.ok) {
             throw new Error('Failed to fetch shop details.');
           }
-          const data = await response.json();
-          setShopData(data);
-        } catch (err: any) {
-          setError(err.message);
+                      const data = await response.json() as ShopData;
+            setShopData(data);
+        } catch (err: unknown) {
+          setError((err as Error)?.message ?? 'Error loading shop details');
         } finally {
           setPageLoading(false);
         }
       };
 
-      fetchShopDetails();
+      void fetchShopDetails();
     }
   }, [authLoading, user, role, shopId]);
 
@@ -158,7 +158,7 @@ export default function ShopDetailsPage({ params }: { params: Promise<{ shopId: 
             <div className="flex justify-between items-center p-4 bg-gray-50 rounded-md">
               <span className="text-md font-medium text-gray-700">Current Tier:</span>
               <span className="text-xl font-bold text-gray-800">
-                {loyalty?.current_tier_name || 'Bronze'}
+                {loyalty?.current_tier_name ?? 'Bronze'}
               </span>
             </div>
             {nextTier && (
@@ -170,7 +170,7 @@ export default function ShopDetailsPage({ params }: { params: Promise<{ shopId: 
                   value={progress}
                   className="w-full [&>div]:bg-amber-500"
                 />
-                <p className="text-sm text-gray-500 text-right">
+                <p className="text-sm text-gray-700 text-right">
                   {`${currentPoints} / ${nextTier.points_to_unlock} points`}
                 </p>
               </div>

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { loyaltyPrograms, customerLoyalty } from "@/server/db/schema";
 import { getUserFromSession } from "@/lib/session";

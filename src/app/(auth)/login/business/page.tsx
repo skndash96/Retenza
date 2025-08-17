@@ -12,7 +12,7 @@ export default function BusinessLogin() {
     const phoneNumber = parsePhoneNumberFromString(data.phone, 'IN');
     let formattedPhone = data.phone;
   
-    if (phoneNumber && phoneNumber.isValid()) {
+    if (phoneNumber?.isValid()) {
       formattedPhone = phoneNumber.format('E.164');
     } else {
       toast.error('Invalid phone number format.');
@@ -29,8 +29,8 @@ export default function BusinessLogin() {
       toast.success('Login successful! Redirecting...');
       router.push('/business');
     } else {
-      const errorData = await res.json();
-      toast.error(errorData.error || 'Login failed. Please try again.');
+      const errorData = await res.json() as { error?: string };
+      toast.error(errorData.error ?? 'Login failed. Please try again.');
     }
   };
 
@@ -53,7 +53,7 @@ export default function BusinessLogin() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-600">
-              Don't have an account ?{' '}
+                             Don&apos;t have an account ?{' '}
               <Link
                 href="/signup/business"
                 className="text-amber-600 font-medium hover:underline"
