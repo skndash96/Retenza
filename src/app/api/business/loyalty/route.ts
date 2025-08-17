@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
-import { loyaltyPrograms, customerLoyalty } from "@/server/db/schema";
+import { loyaltyPrograms, customerLoyalty, type Tier } from "@/server/db/schema";
 import { getUserFromSession } from "@/lib/session";
 import { eq, and } from "drizzle-orm";
 
-async function recalcCustomerTier(businessId: number, customerId: number, tiers: any[]) {
+async function recalcCustomerTier(businessId: number, customerId: number, tiers: Array<{ points_to_unlock: number; name: string }>) {
   tiers.sort((a, b) => a.points_to_unlock - b.points_to_unlock);
   const [cl] = await db
     .select()
@@ -24,7 +24,7 @@ async function recalcCustomerTier(businessId: number, customerId: number, tiers:
     .where(and(eq(customerLoyalty.customer_id, customerId), eq(customerLoyalty.business_id, businessId)));
 }
 
-async function updateAllCustomerTiers(businessId: number, tiers: any[]) {
+async function updateAllCustomerTiers(businessId: number, tiers: Array<{ points_to_unlock: number; name: string }>) {
   const customers = await db.select().from(customerLoyalty).where(eq(customerLoyalty.business_id, businessId));
   for (const c of customers) {
     await recalcCustomerTier(businessId, c.customer_id, tiers);
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const business = await getUserFromSession();
     if (!business) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json();
+    const body = await req.json() as { tier: Tier; points_rate?: number };
     if (!body.tier || typeof body.tier !== 'object') {
       return NextResponse.json({ error: "Missing or invalid tier" }, { status: 400 });
     }
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       .from(loyaltyPrograms)
       .where(eq(loyaltyPrograms.business_id, business.id));
 
-    function rewardsMatch(r1: any[], r2: any[]) {
+    function rewardsMatch(r1: Tier['rewards'], r2: Tier['rewards']) {
       if (r1.length !== r2.length) return false;
       return r1.every((reward, idx) => {
         const r2Reward = r2[idx];
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       const existingProgram = existingPrograms[0];
       const existingTiers = existingProgram.tiers;
 
-      const duplicateTier = existingTiers.find((existingTier: any) => {
+      const duplicateTier = existingTiers.find((existingTier: Tier) => {
         return existingTier.name === body.tier.name &&
                rewardsMatch(existingTier.rewards, body.tier.rewards);
       });
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         tiers: updatedTiers,
       }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
 
-      await updateAllCustomerTiers(business.id, updatedTiers);
+      await updateAllCustomerTiers(business.id, updatedTiers.map(tier => ({ points_to_unlock: tier.points_to_unlock, name: tier.name })));
 
       return NextResponse.json(updated[0]);
     } else {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         tiers: [body.tier],
       }).returning();
 
-      await updateAllCustomerTiers(business.id, [body.tier]);
+      await updateAllCustomerTiers(business.id, [{ points_to_unlock: body.tier.points_to_unlock, name: body.tier.name }]);
 
       return NextResponse.json(inserted[0]);
     }
@@ -119,7 +119,7 @@ export async function DELETE(req: NextRequest) {
     const business = await getUserFromSession();
     if (!business) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json();
+    const body = await req.json() as { tierName: string; reward?: { reward_type: string; description: string; value: number } };
     const { tierName, reward } = body;
 
     if (!tierName || typeof tierName !== "string") {
@@ -136,7 +136,7 @@ export async function DELETE(req: NextRequest) {
 
     const program = existingPrograms[0];
     const tiers = program.tiers;
-    const tierIndex = tiers.findIndex((t: any) => t.name === tierName);
+    const tierIndex = tiers.findIndex((t: Tier) => t.name === tierName);
     if (tierIndex === -1) {
       return NextResponse.json({ error: `Tier "${tierName}" does not exist` }, { status: 404 });
     }
@@ -152,7 +152,7 @@ export async function DELETE(req: NextRequest) {
       }
 
       const rewards = tiers[tierIndex].rewards;
-      const rewardIndex = rewards.findIndex((r: any) =>
+      const rewardIndex = rewards.findIndex((r) =>
         r.reward_type === reward.reward_type &&
         r.description === reward.description &&
         r.value === reward.value
@@ -169,7 +169,7 @@ export async function DELETE(req: NextRequest) {
 
       const updated = await db.update(loyaltyPrograms).set({ tiers }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
 
-      await updateAllCustomerTiers(business.id, tiers);
+      await updateAllCustomerTiers(business.id, tiers.map(tier => ({ points_to_unlock: tier.points_to_unlock, name: tier.name })));
 
       return NextResponse.json({
         message: rewards.length === 0
@@ -182,7 +182,7 @@ export async function DELETE(req: NextRequest) {
     tiers.splice(tierIndex, 1);
     const updated = await db.update(loyaltyPrograms).set({ tiers }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
 
-    await updateAllCustomerTiers(business.id, tiers);
+    await updateAllCustomerTiers(business.id, tiers.map(tier => ({ points_to_unlock: tier.points_to_unlock, name: tier.name })));
 
     return NextResponse.json({
       message: `Tier "${tierName}" deleted successfully`,

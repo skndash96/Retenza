@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest) {
       expires_at: mission.expires_at,
       applicable_tiers: Array.isArray(mission.applicable_tiers)
         ? mission.applicable_tiers.map((t) =>
-            t && typeof t === "object" && "name" in t ? String(t.name) : String(t)
+            t && typeof t === "object" && "name" in t ? String((t as { name: string }).name) : String(t)
           )
         : [],
     }));
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json() as { title?: string; description?: string; expires_at?: string; applicable_tiers?: string[] };
     if (!body.title || !body.description || !body.expires_at) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
@@ -73,7 +73,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json() as { id?: number };
     if (!body.id) {
       return NextResponse.json({ error: "Missing mission ID" }, { status: 400 });
     }

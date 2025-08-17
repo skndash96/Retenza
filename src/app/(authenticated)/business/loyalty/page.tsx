@@ -189,12 +189,12 @@ export default function LoyaltyPage() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (!newTierName || !newTierPoints) return alert('Please fill all fields');
+                  if (!newTierName || !newTierPoints) return toast.error('Please fill all fields');
 
-                  const payload: any = { tier: { name: newTierName, points_to_unlock: Number(newTierPoints), rewards: newRewards } };
+                  const payload: { tier: { name: string; points_to_unlock: number; rewards: Reward[] }; points_rate?: number } = { tier: { name: newTierName, points_to_unlock: Number(newTierPoints), rewards: newRewards } };
                   if(!program){
                     const points_rate = parseFloat(prompt('Enter points_rate for new program') ?? '0');
-                    if(isNaN(points_rate)) return alert('Invalid points rate');
+                    if(isNaN(points_rate)) return toast.error('Invalid points rate');
                     payload.points_rate = points_rate;
                   }
 
@@ -204,18 +204,18 @@ export default function LoyaltyPage() {
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(payload),
                     });
-                    const data = await res.json();
+                    const data = await res.json() as { error?: string };
                     if(res.ok){
-                      alert('Tier added!');
+                      toast.success('Tier added!');
                       void loadProgram();
                       setShowTierForm(false);
                       setNewTierName(''); setNewTierPoints(''); setNewRewards([]);
                     } else {
-                      alert(data.error ?? 'Error adding tier');
+                      toast.error(data.error ?? 'Error adding tier');
                     }
                   } catch(err){
                     console.error(err);
-                    alert('Error adding tier');
+                    toast.error('Error adding tier');
                   }
                 }}
               >

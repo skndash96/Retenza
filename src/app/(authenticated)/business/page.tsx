@@ -45,7 +45,7 @@ export default function BusinessDashboardPage() {
       setError(null);
       const res = await fetch('/api/business/dashboard', { cache: 'no-store' });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
+        const j = await res.json().catch(() => ({})) as { error?: string };
         toast.error(j?.error ?? `Failed to load dashboard (${res.status})`);
         throw new Error(j?.error ?? `Failed to load dashboard (${res.status})`);
       }

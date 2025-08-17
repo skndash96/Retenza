@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-misused-promises */
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
@@ -45,16 +46,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const response = await fetch('/api/auth/session');
-      const data = await response.json();
+      const data = await response.json() as { user?: UserSession; role?: UserRole };
       if (response.ok && data.user) {
-        if (data.role === 'user' && data.user.dob) {
-          data.user.dob = new Date(data.user.dob).getTime();
+        if (data.role === 'user' && data.user && 'dob' in data.user && data.user.dob) {
+          (data.user).dob = new Date(data.user.dob).getTime();
         }
-        if (data.role === 'user' && data.user.anniversary) {
-          data.user.anniversary = new Date(data.user.anniversary).getTime();
+        if (data.role === 'user' && data.user && 'anniversary' in data.user && data.user.anniversary) {
+          (data.user).anniversary = new Date(data.user.anniversary).getTime();
         }
         setUser(data.user);
-        setRole(data.role);
+        setRole(data.role ?? null);
       } else {
         setUser(null);
         setRole(null);
@@ -69,7 +70,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    void fetchSession();
+    const initSession = () => {
+      void fetchSession();
+    };
+    initSession();
   }, []);
 
   const login = (userData: { user: UserSession; role: UserRole }) => {

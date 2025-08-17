@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -46,17 +46,7 @@ export default function CustomerDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user || role !== 'business') {
-        router.push('/login/business');
-      } else {
-        void fetchCustomer();
-      }
-    }
-  }, [loading, user, role, router]);
-
-  async function fetchCustomer() {
+  const fetchCustomer = useCallback(async () => {
     setLoadingCustomer(true);
     try {
       const res = await fetch(`/api/business/customers/${String(customerId)}`);
@@ -80,7 +70,17 @@ export default function CustomerDetailPage() {
     } finally {
       setLoadingCustomer(false);
     }
-  }
+  }, [customerId]);
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user || role !== 'business') {
+        router.push('/login/business');
+      } else {
+        void fetchCustomer();
+      }
+    }
+  }, [loading, user, role, router, fetchCustomer]);
 
   async function handleAddTransaction() {
     if (!billAmount || isNaN(Number(billAmount))) {
@@ -99,7 +99,7 @@ export default function CustomerDetailPage() {
       });
       if (!res.ok) throw new Error('Failed to add transaction');
 
-      const data = await res.json();
+      const data = await res.json() as { transaction: Transaction };
 
       setTransactions((prev) => [data.transaction, ...prev]);
       await fetchCustomer();
@@ -126,8 +126,16 @@ export default function CustomerDetailPage() {
         <CardContent>
           <p>Phone: {customer.phone_number}</p>
           <p>Gender: {customer.gender ?? 'N/A'}</p>
-          <p>DOB: {customer.dob ?? 'N/A'}</p>
-          <p>Anniversary: {customer.anniversary ?? 'N/A'}</p>
+          <p>
+            DOB: {customer.dob
+              ? new Date(customer.dob).toLocaleDateString('en-CA')
+              : 'N/A'}
+          </p>
+          <p>
+            Anniversary: {customer.anniversary
+              ? new Date(customer.anniversary).toLocaleDateString('en-CA')
+              : 'N/A'}
+          </p>
         </CardContent>
       </Card>
 

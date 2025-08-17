@@ -6,17 +6,17 @@ import { NextResponse } from "next/server";
 import { createSession } from "../../../../lib/session";
 
 export async function POST(req: Request) {
-  const { phone , password } = await req.json()
+  const { phone , password } = await req.json() as { phone: string; password: string }
   console.log(phone);
   console.log(password);
   const [user] = await db.select().from(businesses).where(eq(businesses.phone_number, phone));
+  if (!user) {
+    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+  }
+
   if (!user?.id) {
     console.error("User ID is undefined");
     return NextResponse.json({ error: "User ID is undefined" }, { status: 500 });
-  }
-
-  if (!user) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
   const valid = await bcrypt.compare(password, user.hashed_password);

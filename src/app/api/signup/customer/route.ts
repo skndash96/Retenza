@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const cookieStore = await cookies();
 
   try {
-    const body = await req.json();
+    const body = await req.json() as unknown;
     const validatedData = customerSignupSchema.parse(body);
 
     const { password, firebaseIdToken } = validatedData;

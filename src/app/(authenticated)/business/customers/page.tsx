@@ -81,12 +81,12 @@ export default function BusinessCustomersPage() {
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
+        const errData = await res.json().catch(() => ({})) as { error?: string };
         toast.error(errData?.error ?? 'Failed to add/find customer');
         return;
       }
 
-      const data = await res.json() as PostAddResponse;
+      await res.json() as PostAddResponse;
 
       setShowAddModal(false);
       setPhoneInput('');

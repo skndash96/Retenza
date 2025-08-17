@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm, useFieldArray, useWatch, Controller } from 'react-hook-form';
-import type { FieldErrors, UseFormRegister } from 'react-hook-form';
+import type { FieldErrors, UseFormRegister, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -248,7 +248,7 @@ const RewardFields = ({
   errors,
   isLoading,
 }: {
-  control: any,
+  control: Control<LoyaltyProgramData>,
   register: UseFormRegister<LoyaltyProgramData>,
   tierIndex: number,
   errors: FieldErrors<LoyaltyProgramData>,
@@ -265,7 +265,7 @@ const RewardFields = ({
     <div className="space-y-4 mt-4">
       <h5 className="text-md font-medium">Rewards for this Tier</h5>
       {rewardFields.map((reward, rewardIndex) => {
-        const currentReward = watchedRewards?.[rewardIndex] ?? {};
+        const currentReward = watchedRewards?.[rewardIndex] ?? { reward_type: '', description: '', value: 0 };
         return (
           <div key={reward.id} className="border-l-2 border-gray-200 pl-3 py-3 space-y-3 rounded-sm bg-white">
             <div className="flex justify-between items-center">

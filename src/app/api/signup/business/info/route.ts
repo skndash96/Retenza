@@ -25,7 +25,7 @@ const businessInfoSchema = z.object({
 export async function POST(req: Request) {
   const cookieStore = await cookies();
   try {
-    const body = await req.json();
+    const body = await req.json() as unknown;
     const validatedData = businessInfoSchema.parse(body);
     const { password, name, address, business_type, contact_number_2, firebaseIdToken } = validatedData;
 

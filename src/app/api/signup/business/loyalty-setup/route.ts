@@ -45,10 +45,10 @@ export async function POST(req: Request) {
       const tiersWithIds: Tier[] = tiers.map((tier, index) => ({
         ...tier,
         id: index + 1,
-        rewards: tier.rewards.map((reward: unknown) => ({
-          ...reward,
-          value: reward.value !== undefined ? reward.value : 0,
-          description: reward.description !== undefined ? reward.description : "",
+        rewards: tier.rewards.map((reward) => ({
+          reward_type: reward.reward_type,
+          description: reward.description ?? "",
+          value: reward.value ?? 0,
         })),
       }));
 
@@ -65,7 +65,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, message: "Loyalty program setup complete." }, { status: 200 });
 
   } catch (error) {
-    if (error instanceof z.ZodError) { return NextResponse.json({ error: "Validation failed.", details: error.flatten() }, { status: 400 }); }
+    if (error instanceof z.ZodError) { 
+      return NextResponse.json({ error: "Validation failed.", details: error.flatten() }, { status: 400 }); 
+    }
     console.error("Loyalty program setup failed:", error);
     return NextResponse.json({ error: "Setup failed.", details: error instanceof Error ? error.message : "An unexpected error occurred." }, { status: 500 });
   }

@@ -2,7 +2,7 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-// z is not used since schema is passed as prop
+import { type z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,12 +21,12 @@ export function BusinessInfoForm({
   isLoading,
   schema,
 }: {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: unknown) => void;
   isLoading: boolean;
-  schema: any;
+  schema: z.ZodSchema;
 }) {
   const { register, handleSubmit, formState: { errors }, control } = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: {
       name: '',
       phone_number: '',
@@ -59,7 +59,7 @@ export function BusinessInfoForm({
                 disabled={isLoading}
                 className="focus:border-amber-400 focus:ring-amber-500"
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{String(errors.name.message)}</p>}
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message ? String(errors.name.message) : 'Invalid input'}</p>}
             </div>
 
             <div>
@@ -70,7 +70,7 @@ export function BusinessInfoForm({
                 disabled={isLoading}
                 className="focus:border-amber-400 focus:ring-amber-500"
               />
-              {errors.phone_number && <p className="text-red-500 text-sm mt-1">{String(errors.phone_number.message)}</p>}
+              {errors.phone_number && <p className="text-red-500 text-sm mt-1">{errors.phone_number.message ? String(errors.phone_number.message) : 'Invalid input'}</p>}
             </div>
 
             <div>
@@ -81,7 +81,7 @@ export function BusinessInfoForm({
                 disabled={isLoading}
                 className="focus:border-amber-400 focus:ring-amber-500"
               />
-              {errors.address && <p className="text-red-500 text-sm mt-1">{String(errors.address.message)}</p>}
+              {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address.message ? String(errors.address.message) : 'Invalid input'}</p>}
             </div>
 
             <div>
@@ -92,7 +92,7 @@ export function BusinessInfoForm({
                 render={({ field }) => (
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value ?? ''}
                     disabled={isLoading}
                   >
                     <SelectTrigger className="focus:border-amber-400 focus:ring-amber-500">
@@ -108,7 +108,7 @@ export function BusinessInfoForm({
                   </Select>
                 )}
               />
-              {errors.business_type && <p className="text-red-500 text-sm mt-1">{String(errors.business_type.message)}</p>}
+              {errors.business_type && <p className="text-red-500 text-sm mt-1">{errors.business_type.message ? String(errors.business_type.message) : 'Invalid input'}</p>}
             </div>
 
             <div>
@@ -119,7 +119,7 @@ export function BusinessInfoForm({
                 disabled={isLoading}
                 className="focus:border-amber-400 focus:ring-amber-500"
               />
-              {errors.contact_number_2 && <p className="text-red-500 text-sm mt-1">{String(errors.contact_number_2.message)}</p>}
+              {errors.contact_number_2 && <p className="text-red-500 text-sm mt-1">{errors.contact_number_2.message ? String(errors.contact_number_2.message) : 'Invalid input'}</p>}
             </div>
 
             <div>
@@ -131,7 +131,7 @@ export function BusinessInfoForm({
                 disabled={isLoading}
                 className="focus:border-amber-400 focus:ring-amber-500"
               />
-              {errors.password && <p className="text-red-500 text-sm mt-1">{String(errors.password.message)}</p>}
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message ? String(errors.password.message) : 'Invalid input'}</p>}
             </div>
 
             <div>
@@ -143,7 +143,7 @@ export function BusinessInfoForm({
                 disabled={isLoading}
                 className="focus:border-amber-400 focus:ring-amber-500"
               />
-              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{String(errors.confirmPassword.message)}</p>}
+              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message ? String(errors.confirmPassword.message) : 'Invalid input'}</p>}
             </div>
 
             <div>

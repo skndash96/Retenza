@@ -49,14 +49,14 @@ export default function CustomerProfileForm({ user }: CustomerProfileFormProps) 
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json() as { error?: string };
 
       if (response.ok) {
         setMessage('Profile updated successfully!');
         router.push('/customer');
         router.refresh(); 
       } else {
-        setMessage(data.error ?? 'Failed to save profile. Please try again.');
+        setMessage(data?.error ?? 'Failed to save profile. Please try again.');
       }
     } catch (error) {
       console.error('Error saving profile:', error);

@@ -123,8 +123,8 @@ try {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        toast.error(errorData.error ?? errorData.details ?? 'An unknown error occurred. PLease try again.');
+        const errorData = await res.json() as { error?: string; details?: string };
+        toast.error(errorData.error ?? errorData.details ?? 'An unknown error occurred. Please try again.');
         setServerError(errorData.error ?? errorData.details ?? 'An unknown error occurred.');
       } else {
         toast.success('Signup successful! Redirecting to login...');

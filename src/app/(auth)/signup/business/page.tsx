@@ -30,7 +30,7 @@ const businessInfoSchema = z.object({
 });
 
 type BusinessInfoData = z.infer<typeof businessInfoSchema>;
-type LoyaltyProgramData = any; 
+type LoyaltyProgramData = Record<string, unknown>; 
 
 export default function BusinessSignupPage() {
   const router = useRouter();
@@ -136,7 +136,7 @@ export default function BusinessSignupPage() {
         toast.success('Loyalty program created! Redirecting to dashboard.');
         router.push('/business'); 
       }
-         } catch (_err) {
+         } catch {
        const errorMessage = 'Failed to complete loyalty setup. Please try again.';
       toast.error(errorMessage);
       setError(errorMessage);

@@ -5,7 +5,7 @@ const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 if (!serviceAccountKey) {
   throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
 }
-const serviceAccount = JSON.parse(serviceAccountKey);
+const serviceAccount = JSON.parse(serviceAccountKey) as Record<string, unknown>;
 if (!getApps().length) {
     initializeApp({
         credential: cert(serviceAccount),
