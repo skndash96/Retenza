@@ -104,8 +104,10 @@ export default function CustomerMissionsPage() {
         throw new Error('Failed to fetch missions.');
       }
       const data = await response.json();
+
       setCompanyMissions(data);
     } catch (error) {
+      console.error('Error fetching missions:', error);
       setError(error instanceof Error ? error.message : 'Failed to fetch missions.');
     } finally {
       setMissionsLoading(false);
@@ -188,6 +190,8 @@ export default function CustomerMissionsPage() {
       };
     })
   );
+
+
 
   // Filter missions based on search and company
   const filteredMissions = allMissions.filter(mission => {
@@ -465,8 +469,19 @@ export default function CustomerMissionsPage() {
           {filteredMissions.length === 0 && (
             <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
               <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-xl text-gray-500">No missions found matching your criteria.</p>
-              <p className="text-gray-400">Try adjusting your search or filters.</p>
+              {missionsLoading ? (
+                <p className="text-xl text-gray-500">Loading missions...</p>
+              ) : companyMissions.length === 0 ? (
+                <>
+                  <p className="text-xl text-gray-500">No missions available yet.</p>
+                  <p className="text-gray-400">Businesses need to create missions first.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xl text-gray-500">No missions found matching your criteria.</p>
+                  <p className="text-gray-400">Try adjusting your search or filters.</p>
+                </>
+              )}
             </div>
           )}
         </div>

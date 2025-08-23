@@ -100,8 +100,17 @@ export default function CustomerDashboard() {
       // Refresh missions to show updated status
       const missionsResponse = await fetch('/api/customer/missions');
       if (missionsResponse.ok) {
-        const missionsData = await missionsResponse.json() as Mission[];
-        setTopMissions(missionsData.slice(0, 3));
+        const missionsData = await missionsResponse.json() as { business_id: number; business_name: string; business_address: string; missions: Mission[] }[];
+        console.log('Refreshed missions data:', missionsData);
+        // Flatten missions from all businesses and take top 3
+        const allMissions = missionsData.flatMap(company =>
+          company.missions.map(mission => ({
+            ...mission,
+            business_name: company.business_name
+          }))
+        );
+        console.log('Refreshed flattened missions:', allMissions);
+        setTopMissions(allMissions.slice(0, 3));
       }
 
       // Refresh completed missions count
@@ -140,8 +149,17 @@ export default function CustomerDashboard() {
           // Fetch top missions
           const missionsResponse = await fetch('/api/customer/missions');
           if (missionsResponse.ok) {
-            const missionsData = await missionsResponse.json() as Mission[];
-            setTopMissions(missionsData.slice(0, 3)); // Top 3 missions
+            const missionsData = await missionsResponse.json() as { business_id: number; business_name: string; business_address: string; missions: Mission[] }[];
+            console.log('Raw missions data:', missionsData);
+            // Flatten missions from all businesses and take top 3
+            const allMissions = missionsData.flatMap(company =>
+              company.missions.map(mission => ({
+                ...mission,
+                business_name: company.business_name
+              }))
+            );
+            console.log('Flattened missions:', allMissions);
+            setTopMissions(allMissions.slice(0, 3)); // Top 3 missions
           }
 
           // Fetch mission registry data (completed and ongoing)

@@ -36,9 +36,7 @@ const pwaConfig = withPWA({
 /** @type {import("next").NextConfig} */
 const config = {
   ...pwaConfig,
-  experimental: {
-    serverComponentsExternalPackages: [],
-  },
+  serverExternalPackages: [],
 };
 
 export default config;

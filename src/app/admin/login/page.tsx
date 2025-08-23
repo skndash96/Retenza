@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="password" className="text-sm font-medium text-sm font-medium text-gray-700">
+                                <label htmlFor="password" className="text-sm font-medium text-gray-700">
                                     Password
                                 </label>
                                 <div className="relative">

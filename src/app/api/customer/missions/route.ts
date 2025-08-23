@@ -69,7 +69,32 @@ export async function GET(_req: NextRequest) {
       }
     }
 
-    return NextResponse.json(eligibleMissions);
+    // Group missions by business
+    const missionsByCompany = new Map<number, {
+      business_id: number;
+      business_name: string;
+      business_address: string;
+      missions: typeof eligibleMissions;
+    }>();
+
+    for (const mission of eligibleMissions) {
+      const companyKey = mission.business_id;
+      if (!missionsByCompany.has(companyKey)) {
+        missionsByCompany.set(companyKey, {
+          business_id: mission.business_id,
+          business_name: mission.business_name,
+          business_address: mission.business_address ?? '',
+          missions: []
+        });
+      }
+      const company = missionsByCompany.get(companyKey);
+      if (company) {
+        company.missions.push(mission);
+      }
+    }
+
+    const result = Array.from(missionsByCompany.values());
+    return NextResponse.json(result);
 
   } catch (error) {
     console.error('Error fetching missions:', error);

@@ -2,9 +2,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Star,
   Gift,
-  Users,
   Zap,
   Trophy,
   ArrowRight,
@@ -12,13 +10,9 @@ import {
   Download,
   UserPlus,
   Sparkles,
-  TrendingUp,
-  Shield,
   Heart,
   Globe,
   Smartphone,
-  Store,
-  Award,
   Target
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -60,7 +54,7 @@ export default function RetenzaLanding() {
             }
           }
         }
-      } catch (error) {
+      } catch {
         console.log('User not authenticated, staying on landing page');
       }
     };
@@ -70,64 +64,88 @@ export default function RetenzaLanding() {
 
   const customerFeatures = [
     {
-      icon: Gift,
-      title: "Instant Rewards",
-      desc: "Get points and rewards with every purchase instantly",
-      color: "from-pink-500 to-rose-500",
-      bgColor: "from-pink-50 to-rose-50"
+      icon: Target,
+      title: "Mission-Based Rewards",
+      desc: "Turn shopping into adventures with personalized challenges and quests",
+      color: "from-green-500 to-emerald-500",
+      bgColor: "from-green-50 to-emerald-50"
     },
     {
-      icon: Trophy,
-      title: "Level Up",
-      desc: "Unlock exclusive perks as you reach higher tiers",
-      color: "from-amber-500 to-orange-500",
-      bgColor: "from-amber-50 to-orange-50"
-    },
-    {
-      icon: Users,
-      title: "Social Rewards",
-      desc: "Invite friends and earn together with bonus points",
+      icon: Zap,
+      title: "AI-Powered Insights",
+      desc: "Smart recommendations and personalized offers based on your behavior",
       color: "from-blue-500 to-indigo-500",
       bgColor: "from-blue-50 to-indigo-50"
     },
     {
-      icon: Zap,
-      title: "Flash Deals",
-      desc: "Access exclusive time-limited offers and discounts",
-      color: "from-purple-500 to-violet-500",
-      bgColor: "from-purple-50 to-violet-50"
+      icon: Trophy,
+      title: "Dynamic Tiers",
+      desc: "Fluid loyalty levels that adapt to your shopping patterns and preferences",
+      color: "from-amber-500 to-orange-500",
+      bgColor: "from-amber-50 to-orange-50"
+    },
+    {
+      icon: Sparkles,
+      title: "Gamified Experience",
+      desc: "Streaks, achievements, and social challenges that make loyalty fun",
+      color: "from-purple-500 to-pink-500",
+      bgColor: "from-purple-50 to-pink-50"
     }
   ];
 
   const howItWorks = [
     {
       step: "1",
-      title: "Sign Up Instantly",
-      desc: "Scan QR code or download app. Get welcome bonus immediately.",
+      title: "Join the Revolution",
+      desc: "Download the app and experience the future of loyalty rewards in minutes.",
       color: "from-blue-500 to-indigo-600",
       icon: UserPlus
     },
     {
       step: "2",
-      title: "Earn & Level Up",
-      desc: "Collect points with purchases. Watch your tier progress in real-time.",
+      title: "Complete Missions",
+      desc: "Take on personalized challenges that transform shopping into adventures.",
       color: "from-purple-500 to-pink-600",
-      icon: TrendingUp
+      icon: Target
     },
     {
       step: "3",
-      title: "Unlock Rewards",
-      desc: "Redeem points for discounts, freebies, and exclusive experiences.",
+      title: "Unlock the Extraordinary",
+      desc: "Access exclusive rewards, experiences, and benefits that go beyond traditional loyalty.",
       color: "from-amber-500 to-orange-600",
-      icon: Gift
+      icon: Sparkles
     }
   ];
 
-  const stats = [
-    { number: "10,000+", label: "Happy Customers", icon: Heart, color: "from-red-500 to-pink-500" },
-    { number: "500+", label: "Partner Stores", icon: Store, color: "from-blue-500 to-indigo-500" },
-    { number: "₹50L+", label: "Rewards Given", icon: Award, color: "from-amber-500 to-orange-500" },
-    { number: "24/7", label: "Support", icon: Shield, color: "from-green-500 to-emerald-500" }
+  const valueProps = [
+    {
+      number: "100%",
+      label: "Free Forever",
+      icon: Heart,
+      color: "from-red-500 to-pink-500",
+      description: "No hidden fees, ever"
+    },
+    {
+      number: "10x",
+      label: "Better Rewards",
+      icon: Trophy,
+      color: "from-amber-500 to-orange-500",
+      description: "Than traditional programs"
+    },
+    {
+      number: "24/7",
+      label: "Smart Tracking",
+      icon: Zap,
+      color: "from-blue-500 to-indigo-500",
+      description: "AI-powered insights"
+    },
+    {
+      number: "∞",
+      label: "Possibilities",
+      icon: Sparkles,
+      color: "from-purple-500 to-pink-500",
+      description: "Unlimited earning potential"
+    }
   ];
 
   const handlePrimaryAction = async () => {
@@ -236,19 +254,19 @@ export default function RetenzaLanding() {
                 transition={{ delay: 0.2 }}
                 className="inline-flex items-center bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-4 py-2 rounded-full text-xs font-semibold mb-6 shadow-sm border border-blue-200"
               >
-                <Zap className="w-3 h-3 mr-2 text-blue-600" />
-                India&apos;s Smart Loyalty Platform
+                <Sparkles className="w-3 h-3 mr-2 text-blue-600" />
+                Revolutionary Loyalty Platform
               </motion.div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
-                Earn rewards,
+                The Future of
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
-                  unlock experiences
+                  Customer Loyalty
                 </span>
               </h1>
 
               <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Join thousands of smart shoppers earning points, climbing tiers, and unlocking exclusive rewards at your favorite stores across India.
+                Revolutionary AI-powered platform that transforms every purchase into rewards, missions into adventures, and customers into brand champions. Built for the next generation of Indian consumers.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
@@ -278,24 +296,25 @@ export default function RetenzaLanding() {
                 {primaryButton.description}
               </p>
 
-              {/* Stats Grid */}
+              {/* Value Props Grid */}
               <motion.div
                 variants={fadeUp}
                 className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl lg:max-w-none"
               >
-                {stats.map((stat, index) => (
+                {valueProps.map((prop, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + index * 0.1 }}
-                    className="text-center"
+                    className="text-center group"
                   >
-                    <div className={`w-10 h-10 bg-gradient-to-r ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-2 shadow-lg`}>
-                      <stat.icon className="w-5 h-5 text-white" />
+                    <div className={`w-12 h-12 bg-gradient-to-r ${prop.color} rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <prop.icon className="w-6 h-6 text-white" />
                     </div>
-                    <div className="text-lg font-bold text-gray-900 mb-1">{stat.number}</div>
-                    <div className="text-xs text-gray-600">{stat.label}</div>
+                    <div className="text-lg font-bold text-gray-900 mb-1">{prop.number}</div>
+                    <div className="text-xs font-medium text-gray-700 mb-1">{prop.label}</div>
+                    <div className="text-xs text-gray-500">{prop.description}</div>
                   </motion.div>
                 ))}
               </motion.div>
@@ -326,31 +345,31 @@ export default function RetenzaLanding() {
                     <div className="p-4 h-full">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="text-sm font-bold text-gray-900">Welcome, Riya!</h3>
-                          <p className="text-xs text-gray-500">Gold Member</p>
+                          <h3 className="text-sm font-bold text-gray-900">Smart Rewards</h3>
+                          <p className="text-xs text-gray-500">AI-Powered</p>
                         </div>
-                        <div className="w-10 h-10 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                          <Trophy className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                          <Sparkles className="w-5 h-5 text-white" />
                         </div>
                       </div>
 
-                      {/* Points Card */}
+                      {/* Mission Card */}
                       <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-3 mb-4 text-white shadow-lg">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-xs opacity-90">Total Points</span>
-                          <Star className="w-3 h-3" />
+                          <span className="text-xs opacity-90">Active Mission</span>
+                          <Target className="w-3 h-3" />
                         </div>
-                        <div className="text-lg font-bold">2,847</div>
-                        <div className="text-xs opacity-90">₹284 worth rewards</div>
+                        <div className="text-sm font-bold">Coffee Explorer</div>
+                        <div className="text-xs opacity-90">Visit 3 cafes this week</div>
                       </div>
 
                       <div className="mb-4">
                         <div className="flex justify-between text-xs mb-2">
-                          <span className="text-gray-600">Progress to Platinum</span>
-                          <span className="font-medium">78%</span>
+                          <span className="text-gray-600">Mission Progress</span>
+                          <span className="font-medium">2/3</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full w-3/4 shadow-sm"></div>
+                          <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full w-2/3 shadow-sm"></div>
                         </div>
                       </div>
 
@@ -360,8 +379,8 @@ export default function RetenzaLanding() {
                           <span className="text-xs font-medium text-gray-700">Rewards</span>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm rounded-lg p-2 text-center shadow-sm">
-                          <Users className="w-4 h-4 text-purple-600 mx-auto mb-1" />
-                          <span className="text-xs font-medium text-gray-700">Refer</span>
+                          <Target className="w-4 h-4 text-green-600 mx-auto mb-1" />
+                          <span className="text-xs font-medium text-gray-700">Missions</span>
                         </div>
                       </div>
                     </div>
@@ -436,14 +455,14 @@ export default function RetenzaLanding() {
           >
             <motion.div variants={fadeUp}>
               <div className="inline-flex items-center bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 px-4 py-2 rounded-full text-xs font-semibold mb-4">
-                <Sparkles className="w-3 h-3 mr-2" />
-                Powerful Features
+                <Zap className="w-3 h-3 mr-2" />
+                Revolutionary Features
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Everything You Need to Earn More
+                Why Retenza is Revolutionary
               </h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Powerful features designed to maximize your rewards and enhance your shopping experience.
+                We&apos;re not just another loyalty program. We&apos;re building the future where every interaction is meaningful, every reward is earned, and every customer becomes a brand champion.
               </p>
             </motion.div>
           </motion.div>
@@ -484,10 +503,10 @@ export default function RetenzaLanding() {
           >
             <motion.div variants={fadeUp}>
               <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                Ready to Start Earning Rewards?
+                Ready to Experience the Future?
               </h2>
               <p className="text-lg text-blue-100 max-w-3xl mx-auto leading-relaxed mb-8">
-                Join thousands of smart shoppers already earning points and unlocking exclusive rewards across India.
+                Be among the first to experience revolutionary loyalty rewards. Join the movement that&apos;s transforming how brands connect with customers across India.
               </p>
             </motion.div>
 
@@ -539,7 +558,7 @@ export default function RetenzaLanding() {
                 </span>
               </div>
               <p className="text-gray-300 mb-4 max-w-lg leading-relaxed text-sm">
-                India&apos;s smartest loyalty platform connecting customers with their favorite brands through rewards, gamification, and personalized experiences.
+                Pioneering the next generation of customer loyalty through AI-powered missions, dynamic rewards, and gamified experiences that create lasting brand connections.
               </p>
               <div className="flex space-x-3">
                 <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors cursor-pointer">
