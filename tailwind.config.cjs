@@ -1,26 +1,3 @@
-// /** @type {import('tailwindcss').Config} */
-// module.exports = {
-//   content: [
-//     './src/app/**/*.{ts,tsx,js,jsx}',
-//     './src/components/**/*.{ts,tsx,js,jsx}',
-//   ],
-//   theme: {
-//     extend: {
-//       colors: {
-//         background: 'var(--background)',
-//         foreground: 'var(--foreground)',
-//         card: 'var(--card)',
-//         primary: 'var(--primary)',
-//         secondary: 'var(--secondary)',
-//         accent: 'var(--accent)',
-//         muted: 'var(--muted)',
-//         destructive: 'var(--destructive)',
-//       },
-//     },
-//   },
-//   plugins: [],
-// };
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -30,29 +7,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#ffffff', // white background
-        foreground: '#1e293b', // slate-800 text
+        background: '#ffffff',
+        foreground: '#1e293b',
 
-        // Cards
-        card: '#ffffff', // white card background
+        card: '#ffffff',
         'card-foreground': '#1e293b',
 
-        // Primary (Amber)
         primary: {
-          DEFAULT: '#d97706', // amber-600
-          foreground: '#ffffff', // white text
-          hover: '#b45309', // amber-700
+          DEFAULT: '#4f46e5',
+          foreground: '#ffffff',
+          hover: '#3730a3',
         },
 
-        // Secondary (light amber accent)
         secondary: {
-          DEFAULT: '#fef3c7', // amber-100
-          foreground: '#78350f', // amber-900 text
+          DEFAULT: '#7c3aed',
+          foreground: '#ffffff',
+          hover: '#5b21b6',
         },
 
-        accent: '#fef3c7', // subtle amber tint for highlights
-        muted: '#f3f4f6', // slate-100
-        destructive: '#dc2626', // red-600
+        accent: '#eef2ff',
+        destructive: '#dc2626',
+
+        retenza: {
+          primary: '#4f46e5',
+          'primary-dark': '#3730a3',
+          secondary: '#7c3aed',
+          'secondary-dark': '#5b21b6',
+          accent: '#6366f1',
+          'accent-light': '#a5b4fc',
+          'accent-bg': '#eef2ff',
+          'accent-border': '#c7d2fe',
+        }
       },
     },
   },

@@ -31,7 +31,7 @@ export async function createSession(userId: number, role: "user" | "business") {
 
 
 export async function getUserFromSession() {
-      const cookieStore=await cookies();
+  const cookieStore = await cookies();
 
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionId) return null;
@@ -57,7 +57,7 @@ export async function getUserFromSession() {
 }
 
 export async function getCustomerFromSession() {
-      const cookieStore=await cookies();
+  const cookieStore = await cookies();
 
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionId) return null;
@@ -83,7 +83,7 @@ export async function getCustomerFromSession() {
 }
 
 export async function destroySession() {
-      const cookieStore=await cookies();
+  const cookieStore = await cookies();
 
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionId) return;
@@ -93,4 +93,24 @@ export async function destroySession() {
   cookieStore.set(SESSION_COOKIE_NAME, "", {
     maxAge: 0,
   });
+}
+
+export async function getSession() {
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionId) return null;
+
+  const [session] = await db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.id, sessionId));
+
+  if (!session || new Date(session.expiresAt) < new Date()) return null;
+
+  return {
+    userId: session.userId,
+    role: session.role,
+    sessionId: session.id
+  };
 }

@@ -1,24 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import BusinessApprovalWrapper from '@/components/BusinessApprovalWrapper';
+import { Plus, Trophy, Users, TrendingUp, Settings } from 'lucide-react';
+import { TierManager, type Tier } from '@/components/TierManager';
+import { NewTierForm } from '@/components/NewTierForm';
 
-type Reward = {
-  reward_type: string;
-  description: string;
-  value: number;
-};
-
-type Tier = {
-  name: string;
-  points_to_unlock: number;
-  rewards: Reward[];
-};
 
 type LoyaltyProgram = {
   id: number;
@@ -32,12 +25,8 @@ export default function LoyaltyPage() {
 
   const [program, setProgram] = useState<LoyaltyProgram | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(false);
-
-  const [showTierForm, setShowTierForm] = useState(false);
-  const [newTierName, setNewTierName] = useState('');
-  const [newTierPoints, setNewTierPoints] = useState('');
-  const [newRewards, setNewRewards] = useState<Reward[]>([]);
-  const [rewardInput, setRewardInput] = useState({ reward_type: '', description: '', value: '' });
+  const [showNewTierForm, setShowNewTierForm] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   async function loadProgram() {
     try {
@@ -55,45 +44,129 @@ export default function LoyaltyPage() {
     }
   }
 
-  async function handleDeleteTier(tierName: string) {
-    if (!confirm(`Delete tier "${tierName}"?`)) return;
+  async function handleSaveTier(newTier: Tier) {
     try {
+      setSaving(true);
+      const payload: { tier: Tier; points_rate?: number } = { tier: newTier };
+
+      if (!program) {
+        const points_rate = parseFloat(prompt('Enter points rate for new program (default: 1)') ?? '1');
+        if (isNaN(points_rate) || points_rate <= 0) {
+          toast.error('Invalid points rate. Using default value 1.');
+          payload.points_rate = 1;
+        } else {
+          payload.points_rate = points_rate;
+        }
+      }
+
+      const res = await fetch('/api/business/loyalty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        toast.success('Tier created successfully!');
+        await loadProgram();
+      } else {
+        const data = await res.json();
+        toast.error(data.error ?? 'Failed to create tier');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error creating tier');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleUpdateTier(updatedTier: Tier, tierIndex: number) {
+    if (!program) return;
+
+    try {
+      setSaving(true);
+      const updatedTiers = [...program.tiers];
+      updatedTiers[tierIndex] = updatedTier;
+
+      const res = await fetch('/api/business/loyalty', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tiers: updatedTiers }),
+      });
+
+      if (res.ok) {
+        toast.success('Tier updated successfully!');
+        await loadProgram();
+      } else {
+        const data = await res.json();
+        toast.error(data.error ?? 'Failed to update tier');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error updating tier');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteTier(tierIndex: number) {
+    if (!program) return;
+
+    const tier = program.tiers[tierIndex];
+    if (!confirm(`Delete tier "${tier.name}"? This action cannot be undone.`)) return;
+
+    try {
+      setSaving(true);
       const res = await fetch('/api/business/loyalty', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tierName }),
+        body: JSON.stringify({ tierName: tier.name }),
       });
-      const data = await res.json() as { message?: string; error?: string };
+
       if (res.ok) {
-        toast.success(data.message ?? 'Tier deleted');
-        void loadProgram();
+        toast.success('Tier deleted successfully!');
+        await loadProgram();
       } else {
+        const data = await res.json();
         toast.error(data.error ?? 'Failed to delete tier');
       }
     } catch (err) {
       console.error(err);
       toast.error('Error deleting tier');
+    } finally {
+      setSaving(false);
     }
   }
 
-  async function handleDeleteReward(tierName: string, reward: Reward) {
-    if (!confirm(`Delete reward "${reward.description}" from tier "${tierName}"?`)) return;
+  async function handleMoveTier(tierIndex: number, direction: 'up' | 'down') {
+    if (!program) return;
+
+    const newIndex = direction === 'up' ? tierIndex - 1 : tierIndex + 1;
+    if (newIndex < 0 || newIndex >= program.tiers.length) return;
+
     try {
+      setSaving(true);
+      const updatedTiers = [...program.tiers];
+      [updatedTiers[tierIndex], updatedTiers[newIndex]] = [updatedTiers[newIndex], updatedTiers[tierIndex]];
+
       const res = await fetch('/api/business/loyalty', {
-        method: 'DELETE',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tierName, reward }),
+        body: JSON.stringify({ tiers: updatedTiers }),
       });
-      const data = await res.json() as { message?: string; error?: string };
+
       if (res.ok) {
-        toast.success(data.message ?? 'Reward deleted');
-        void loadProgram();
+        toast.success('Tier order updated!');
+        await loadProgram();
       } else {
-        toast.error(data.error ?? 'Failed to delete reward');
+        const data = await res.json();
+        toast.error(data.error ?? 'Failed to update tier order');
       }
     } catch (err) {
       console.error(err);
-      toast.error('Error deleting reward');
+      toast.error('Error updating tier order');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -104,175 +177,163 @@ export default function LoyaltyPage() {
     }
   }, [loading, user, role, router]);
 
-  if (loading || loadingProgram) return <div>Loading loyalty program...</div>;
+  if (loading || loadingProgram) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading loyalty program...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between mb-6">
-        <h1 className="text-3xl font-bold">Loyalty Program</h1>
-        <Button onClick={() => setShowTierForm(true)}>Add Tier</Button>
-      </div>
-
-      {showTierForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-96">
-            <h2 className="text-xl font-semibold mb-4">Add New Tier</h2>
-
-            <Input
-              placeholder="Tier Name"
-              value={newTierName}
-              onChange={e => setNewTierName(e.target.value)}
-              className="mb-2"
-            />
-            <Input
-              type="number"
-              placeholder="Points to Unlock"
-              value={newTierPoints}
-              onChange={e => setNewTierPoints(e.target.value)}
-              className="mb-4"
-            />
-
-            <div>
-              <p className="font-semibold mb-2">Rewards</p>
-              {newRewards.map((r, i) => (
-                <div key={i} className="flex justify-between items-center mb-1">
-                  <span>{r.reward_type} - {r.description} ({r.value})</span>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setNewRewards(prev => prev.filter((_, idx) => idx !== i))}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              ))}
-
-              <div className="flex gap-2 mt-2">
-                <Input
-                  placeholder="Type"
-                  value={rewardInput.reward_type}
-                  onChange={e => setRewardInput({ ...rewardInput, reward_type: e.target.value })}
-                />
-                <Input
-                  placeholder="Description"
-                  value={rewardInput.description}
-                  onChange={e => setRewardInput({ ...rewardInput, description: e.target.value })}
-                />
-                <Input
-                  placeholder="Value"
-                  type="number"
-                  value={rewardInput.value}
-                  onChange={e => setRewardInput({ ...rewardInput, value: e.target.value })}
-                />
-                <Button
-                  onClick={() => {
-                    if(rewardInput.reward_type && rewardInput.description && rewardInput.value){
-                      setNewRewards([...newRewards, { ...rewardInput, value: Number(rewardInput.value) }]);
-                      setRewardInput({ reward_type: '', description: '', value: '' });
-                    }
-                  }}
-                >
-                  Add Reward
-                </Button>
+    <BusinessApprovalWrapper>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header Section */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Loyalty Program</h1>
+                <p className="text-gray-600">Manage your customer loyalty tiers and rewards</p>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-2 mt-4">
               <Button
-                variant="outline"
-                onClick={() => {
-                  setShowTierForm(false);
-                  setNewTierName(''); setNewTierPoints(''); setNewRewards([]);
-                }}
+                onClick={() => setShowNewTierForm(true)}
+                disabled={saving}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg"
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={async () => {
-                  if (!newTierName || !newTierPoints) return toast.error('Please fill all fields');
-
-                  const payload: { tier: { name: string; points_to_unlock: number; rewards: Reward[] }; points_rate?: number } = { tier: { name: newTierName, points_to_unlock: Number(newTierPoints), rewards: newRewards } };
-                  if(!program){
-                    const points_rate = parseFloat(prompt('Enter points_rate for new program') ?? '0');
-                    if(isNaN(points_rate)) return toast.error('Invalid points rate');
-                    payload.points_rate = points_rate;
-                  }
-
-                  try {
-                    const res = await fetch('/api/business/loyalty', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(payload),
-                    });
-                    const data = await res.json() as { error?: string };
-                    if(res.ok){
-                      toast.success('Tier added!');
-                      void loadProgram();
-                      setShowTierForm(false);
-                      setNewTierName(''); setNewTierPoints(''); setNewRewards([]);
-                    } else {
-                      toast.error(data.error ?? 'Error adding tier');
-                    }
-                  } catch(err){
-                    console.error(err);
-                    toast.error('Error adding tier');
-                  }
-                }}
-              >
-                Save Tier
+                <Plus className="w-5 h-5 mr-2" />
+                Add New Tier
               </Button>
             </div>
           </div>
         </div>
-      )}
 
-      {!program ? (
-        <div>No loyalty program found. Add a tier to create one.</div>
-      ) : (
-        <div>
-          <p>Points Rate: {program.points_rate}</p>
-          <div className="grid gap-4 mt-4">
-            {program.tiers.map((tier, idx) => (
-              <Card key={idx} className="p-4">
-                <CardHeader className="flex justify-between">
-                  <CardTitle>{tier.name}</CardTitle>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteTier(tier.name)}
-                  >
-                    Delete Tier
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <p>Points to Unlock: {tier.points_to_unlock}</p>
-                  <div className="mt-2">
-                    <p className="font-semibold">Rewards:</p>
-                    {tier.rewards.length === 0 ? (
-                      <p>None</p>
-                    ) : (
-                      tier.rewards.map((reward, rIdx) => (
-                        <div key={rIdx} className="flex justify-between items-center">
-                          <span>
-                            {reward.reward_type} - {reward.description} ({reward.value})
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteReward(tier.name, reward)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      ))
-                    )}
+        {program && (
+          <div className="container mx-auto px-4 py-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Trophy className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Total Tiers</p>
+                      <p className="text-2xl font-bold text-gray-900">{program.tiers.length}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+
+              <Card className="border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Users className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Points Rate</p>
+                      <p className="text-2xl font-bold text-gray-900">{program.points_rate}:1</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <TrendingUp className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Total Rewards</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {program.tiers.reduce((sum, tier) => sum + tier.rewards.length, 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <Settings className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Status</p>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        Active
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
+        )}
+
+        <div className="container mx-auto px-4 pb-8">
+          {!program ? (
+            <Card className="border border-gray-200 shadow-sm">
+              <CardContent className="p-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="p-4 bg-blue-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Trophy className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Loyalty Program Yet</h3>
+                  <p className="text-gray-600 mb-6">
+                    Create your first loyalty tier to start rewarding your customers and building long-term relationships.
+                  </p>
+                  <Button
+                    onClick={() => setShowNewTierForm(true)}
+                    disabled={saving}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create First Tier
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Loyalty Tiers</h2>
+                <p className="text-gray-600">
+                  {program.tiers.length} tier{program.tiers.length !== 1 ? 's' : ''} configured
+                </p>
+              </div>
+
+              {program.tiers.map((tier, index) => (
+                <TierManager
+                  key={tier.id ?? index}
+                  tier={tier}
+                  onTierChange={(updatedTier) => handleUpdateTier(updatedTier, index)}
+                  onDelete={() => handleDeleteTier(index)}
+                  onMoveUp={index > 0 ? () => handleMoveTier(index, 'up') : undefined}
+                  onMoveDown={index < program.tiers.length - 1 ? () => handleMoveTier(index, 'down') : undefined}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < program.tiers.length - 1}
+                  disabled={saving}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* New Tier Form Modal */}
+        <NewTierForm
+          isOpen={showNewTierForm}
+          onClose={() => setShowNewTierForm(false)}
+          onSave={handleSaveTier}
+          disabled={saving}
+        />
+      </div>
+    </BusinessApprovalWrapper>
   );
 }

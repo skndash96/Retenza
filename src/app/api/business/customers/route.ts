@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db, customers, customerLoyalty, transactions, loyaltyPrograms } from "@/server/db";
+import type { Tier } from "@/server/db/schema";
 import { getUserFromSession } from "@/lib/session";
 import { eq, sql, and, desc } from "drizzle-orm";
 
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
 
   let program = programArr[0];
   if (!program) {
-         const bronzeTier = { id: 1, name: "Bronze", points_to_unlock: 0, rewards: [] as { reward_type: string; description: string; value: number; }[] };
+    const bronzeTier: Tier = { id: 1, name: "Bronze", points_to_unlock: 0, rewards: [] };
     const ins = await db
       .insert(loyaltyPrograms)
       .values({
@@ -116,10 +117,10 @@ export async function POST(req: NextRequest) {
       .returning();
     program = ins[0];
   } else {
-         const bronzeExists = program.tiers.some((t: unknown) => (t as { name: string })?.name?.toLowerCase() === "bronze");
+    const bronzeExists = program.tiers.some((t: unknown) => (t as { name: string })?.name?.toLowerCase() === "bronze");
     if (!bronzeExists) {
-             const nextId = program.tiers.length ? Math.max(...program.tiers.map((t: unknown) => (t as { id: number })?.id ?? 0)) + 1 : 1;
-       const bronzeTier = { id: nextId, name: "Bronze", points_to_unlock: 0, rewards: [] as { reward_type: string; description: string; value: number; }[] };
+      const nextId = program.tiers.length ? Math.max(...program.tiers.map((t: unknown) => (t as { id: number })?.id ?? 0)) + 1 : 1;
+      const bronzeTier: Tier = { id: nextId, name: "Bronze", points_to_unlock: 0, rewards: [] };
       const upd = await db
         .update(loyaltyPrograms)
         .set({ tiers: [...program.tiers, bronzeTier] })

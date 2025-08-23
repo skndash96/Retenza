@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm, useFieldArray, useWatch, Controller } from 'react-hook-form';
-import type { FieldErrors, UseFormRegister, Control } from 'react-hook-form';
+import type { FieldErrors, UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,30 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
+
+
+const cashbackRewardSchema = z.object({
+  reward_type: z.literal('cashback'),
+  percentage: z.number().int().positive('Percentage must be a positive number.').max(100, 'Cashback cannot exceed 100%.'),
+});
+
+const limitedUsageRewardSchema = z.object({
+  reward_type: z.literal('limited_usage'),
+  reward_text: z.string().min(1, 'Reward description is required.'),
+  usage_limit_per_month: z.number().positive('Usage limit per month must be a positive number.').max(12, 'Cannot exceed 12 times per month.'),
+  one_time: z.boolean(),
+});
+
+const customRewardSchema = z.object({
+  reward_type: z.literal('custom'),
+  name: z.string().min(1, 'Reward name is required.'),
+  reward: z.string().min(1, 'Reward description is required.'),
+});
 
 const rewardSchema = z.discriminatedUnion('reward_type', [
-  z.object({ reward_type: z.literal('Free Item'), description: z.string().min(1, 'Item name is required.'), value: z.number().optional() }),
-  z.object({ reward_type: z.literal('Discount'), description: z.string().optional(), value: z.number().int().positive().min(1, 'Percentage must be a positive number.').max(100, 'Discount cannot exceed 100%.') }),
-  z.object({ reward_type: z.literal('Cashback'), description: z.string().optional(), value: z.number().int().positive().min(1, 'Amount must be a positive number.') }),
+  cashbackRewardSchema,
+  limitedUsageRewardSchema,
+  customRewardSchema,
 ]);
 
 const tierSchema = z.object({
@@ -41,12 +59,13 @@ export function LoyaltyProgramForm({
   onBack: () => void;
   isLoading: boolean;
 }) {
-  const [activeTierIndex, setActiveTierIndex] = useState(0);
+
 
   const {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoyaltyProgramData>({
     resolver: zodResolver(loyaltyProgramFormSchema),
@@ -57,7 +76,7 @@ export function LoyaltyProgramForm({
         {
           name: 'Bronze',
           points_to_unlock: 1,
-          rewards: [{ reward_type: 'Free Item', description: '', value: 0 }],
+          rewards: [{ reward_type: 'cashback', percentage: 5 }],
         },
       ],
     },
@@ -72,166 +91,151 @@ export function LoyaltyProgramForm({
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-10 px-4">
       <Card className="w-full max-w-3xl shadow-lg border border-gray-200">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-gray-700 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Loyalty Program Setup
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Define your loyalty tiers and rewards.
+            Configure your loyalty program tiers and rewards to engage customers and drive retention.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                  <Label htmlFor="points_rate">Points Rate</Label>
-                  <Input
-                    id="points_rate"
-                    type="number"
-                    {...register('points_rate', { valueAsNumber: true })}
-                    disabled={isLoading}
-                    className="focus:border-amber-400 focus:ring-amber-500"
-                  />
-                  {errors.points_rate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {String(errors.points_rate.message)}
-                    </p>
-                  )}
-                </div>
+            {/* Points Rate Section */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+              <Label className="text-sm font-medium text-indigo-800">
+                Points Rate (Hidden from customers)
+              </Label>
+              <p className="text-xs text-indigo-600 mt-1">
+                Currently set to 1:1 ratio. This will be configurable in future updates.
+              </p>
+            </div>
 
-                <div className="md:col-span-2">
-                  <Label htmlFor="description">Loyalty Program Description</Label>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field }) => (
-                      <Textarea
-                        id="description"
-                        disabled={isLoading}
-                        placeholder="e.g., Get 10% off on your first purchase"
-                        value={field.value}
-                        onChange={field.onChange}
-                        className="focus:border-amber-400 focus:ring-amber-500"
-                      />
-                    )}
-                  />
-                  {errors.description && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {String(errors.description.message)}
-                    </p>
-                  )}
-                </div>
+            {/* Description Section */}
+            <div>
+              <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                Program Description
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Describe your loyalty program to customers..."
+                className="mt-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                {...register('description')}
+              />
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+              )}
+            </div>
+
+            {/* Tiers Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-lg font-semibold text-gray-800">Loyalty Tiers</Label>
+                <Button
+                  type="button"
+                  onClick={() => appendTier({
+                    name: `Tier ${tierFields.length + 1}`,
+                    points_to_unlock: (tierFields.length + 1) * 100,
+                    rewards: [{ reward_type: 'cashback', percentage: 5 }],
+                  })}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                >
+                  Add Tier
+                </Button>
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-4">Manage Tiers</h3>
-                <div className="flex gap-2 flex-wrap mb-4">
-                  {tierFields.map((tier, index) => (
-                    <Button
-                      key={tier.id}
-                      type="button"
-                      variant={activeTierIndex === index ? 'default' : 'outline'}
-                      onClick={() => setActiveTierIndex(index)}
-                      className={`whitespace-nowrap ${
-                        activeTierIndex === index
-                          ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-white'
-                          : ''
-                      }`}
-                    >
-                      {tier.name || `Tier ${index + 1}`}
-                    </Button>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      appendTier({ name: '', points_to_unlock: 1, rewards: [] });
-                      setActiveTierIndex(tierFields.length);
-                    }}
-                    disabled={isLoading}
-                  >
-                    + Add Tier
-                  </Button>
-                </div>
-
-                {tierFields.length > 0 && (
-                  <Card className="border border-gray-200 shadow-sm">
-                    <CardContent className="p-4 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-medium">Tier Details</h4>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            if (tierFields.length > 1) {
-                              removeTier(activeTierIndex);
-                              setActiveTierIndex(0);
-                            }
-                          }}
-                          disabled={isLoading || tierFields.length === 1}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          Remove Tier
-                        </Button>
+              <div className="space-y-4">
+                {tierFields.map((tier, tierIndex) => (
+                  <Card key={tier.id} className="border border-gray-200">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-semibold text-gray-800">
+                          {tier.name || `Tier ${tierIndex + 1}`}
+                        </CardTitle>
+                        {tierFields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeTier(tierIndex)}
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Tier Name */}
+                      <div>
+                        <Label htmlFor={`tiers.${tierIndex}.name`} className="text-sm font-medium text-gray-700">
+                          Tier Name
+                        </Label>
+                        <Input
+                          id={`tiers.${tierIndex}.name`}
+                          placeholder="e.g., Bronze, Silver, Gold"
+                          className="mt-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          {...register(`tiers.${tierIndex}.name`)}
+                        />
+                        {errors.tiers?.[tierIndex]?.name && (
+                          <p className="mt-1 text-sm text-red-600">{errors.tiers[tierIndex]?.name?.message}</p>
+                        )}
                       </div>
 
-                      <div className="grid gap-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor={`tiers.${activeTierIndex}.name`}>Tier Name</Label>
-                            <Input
-                              id={`tiers.${activeTierIndex}.name`}
-                              {...register(`tiers.${activeTierIndex}.name`)}
-                              disabled={isLoading}
-                              className="focus:border-amber-400 focus:ring-amber-500"
-                            />
-                          </div>
+                      {/* Points to Unlock */}
+                      <div>
+                        <Label htmlFor={`tiers.${tierIndex}.points_to_unlock`} className="text-sm font-medium text-gray-700">
+                          Points to Unlock
+                        </Label>
+                        <Input
+                          id={`tiers.${tierIndex}.points_to_unlock`}
+                          type="number"
+                          min="1"
+                          placeholder="e.g., 100"
+                          className="mt-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          {...register(`tiers.${tierIndex}.points_to_unlock`, { valueAsNumber: true })}
+                        />
+                        {errors.tiers?.[tierIndex]?.points_to_unlock && (
+                          <p className="mt-1 text-sm text-red-600">{errors.tiers[tierIndex]?.points_to_unlock?.message}</p>
+                        )}
+                      </div>
 
-                          <div>
-                            <Label htmlFor={`tiers.${activeTierIndex}.points_to_unlock`}>
-                              Points to Unlock
-                            </Label>
-                            <Input
-                              id={`tiers.${activeTierIndex}.points_to_unlock`}
-                              type="number"
-                              {...register(`tiers.${activeTierIndex}.points_to_unlock`, {
-                                valueAsNumber: true,
-                              })}
-                              disabled={isLoading}
-                              className="focus:border-amber-400 focus:ring-amber-500"
-                            />
-                          </div>
-                        </div>
-
+                      {/* Rewards Section */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                          Rewards for this Tier
+                        </Label>
                         <RewardFields
+                          tierIndex={tierIndex}
                           control={control}
                           register={register}
-                          tierIndex={activeTierIndex}
+                          setValue={setValue}
                           errors={errors}
                           isLoading={isLoading}
                         />
                       </div>
                     </CardContent>
                   </Card>
-                )}
+                ))}
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between gap-3 pt-4 border-t">
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-6">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onBack}
                 disabled={isLoading}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Back
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 text-white"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
               >
-                {isLoading ? 'Finalizing...' : 'Complete Setup'}
+                {isLoading ? 'Setting up...' : 'Create Loyalty Program'}
               </Button>
             </div>
           </form>
@@ -244,12 +248,14 @@ export function LoyaltyProgramForm({
 const RewardFields = ({
   control,
   register,
+  setValue,
   tierIndex,
   errors,
   isLoading,
 }: {
   control: Control<LoyaltyProgramData>,
   register: UseFormRegister<LoyaltyProgramData>,
+  setValue: UseFormSetValue<LoyaltyProgramData>,
   tierIndex: number,
   errors: FieldErrors<LoyaltyProgramData>,
   isLoading: boolean
@@ -261,16 +267,36 @@ const RewardFields = ({
 
   const watchedRewards = useWatch({ control, name: `tiers.${tierIndex}.rewards` }) ?? [];
 
+  const handleAddReward = () => {
+    appendReward({
+      reward_type: 'cashback',
+      percentage: 5
+    });
+  };
+
+
+
   return (
     <div className="space-y-4 mt-4">
       <h5 className="text-md font-medium">Rewards for this Tier</h5>
       {rewardFields.map((reward, rewardIndex) => {
-        const currentReward = watchedRewards?.[rewardIndex] ?? { reward_type: '', description: '', value: 0 };
+        const currentReward = watchedRewards?.[rewardIndex];
+        // Ensure we have a proper reward object with default values
+        const rewardData = currentReward || { reward_type: 'cashback', percentage: 5 };
+
         return (
-          <div key={reward.id} className="border-l-2 border-gray-200 pl-3 py-3 space-y-3 rounded-sm bg-white">
+          <div key={reward.id} className="border-l-2 border-indigo-200 pl-3 py-3 space-y-3 rounded-sm bg-white">
             <div className="flex justify-between items-center">
               <h6 className="text-sm font-semibold">Reward {rewardIndex + 1}</h6>
-              <Button type="button" variant="ghost" onClick={() => removeReward(rewardIndex)} disabled={isLoading} className="text-red-500 hover:text-red-700 text-xs">Remove</Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => removeReward(rewardIndex)}
+                disabled={isLoading}
+                className="text-red-500 hover:text-red-700 text-xs"
+              >
+                Remove
+              </Button>
             </div>
 
             <div className="grid gap-3">
@@ -280,55 +306,164 @@ const RewardFields = ({
                   name={`tiers.${tierIndex}.rewards.${rewardIndex}.reward_type`}
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Set default values based on reward type
+                        if (value === 'limited_usage') {
+                          setValue(`tiers.${tierIndex}.rewards.${rewardIndex}.reward_text`, '');
+                          setValue(`tiers.${tierIndex}.rewards.${rewardIndex}.usage_limit_per_month`, 1.0);
+                          setValue(`tiers.${tierIndex}.rewards.${rewardIndex}.one_time`, false);
+                        } else if (value === 'cashback') {
+                          setValue(`tiers.${tierIndex}.rewards.${rewardIndex}.percentage`, 5);
+                        } else if (value === 'custom') {
+                          setValue(`tiers.${tierIndex}.rewards.${rewardIndex}.name`, '');
+                          setValue(`tiers.${tierIndex}.rewards.${rewardIndex}.reward`, '');
+                        }
+                      }}
+                      value={field.value || 'cashback'}
+                      disabled={isLoading}
+                    >
                       <SelectTrigger className="w-full min-w-0">
                         <SelectValue placeholder="Select a type..." />
                       </SelectTrigger>
                       <SelectContent position="popper" className="z-50 bg-white shadow-lg border border-gray-200 rounded-md">
-                        <SelectItem value="Free Item">Free Item</SelectItem>
-                        <SelectItem value="Discount">Discount</SelectItem>
-                        <SelectItem value="Cashback">Cashback</SelectItem>
+                        <SelectItem value="cashback">Cashback (Percentage)</SelectItem>
+                        <SelectItem value="limited_usage">Limited Usage Reward</SelectItem>
+                        <SelectItem value="custom">Custom Reward</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 />
               </div>
 
-              {(currentReward.reward_type === 'Free Item' || !currentReward.reward_type) && (
+              {/* Cashback Reward Fields */}
+              {rewardData.reward_type === 'cashback' && (
                 <div>
-                  <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.description`}>Item Name</Label>
-                  <Input id={`tiers.${tierIndex}.rewards.${rewardIndex}.description`} {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.description`)} disabled={isLoading} className="w-full min-w-0" />
-                  {errors?.tiers?.[tierIndex]?.rewards?.[rewardIndex]?.description && <p className="text-red-500 text-sm mt-1">{String(errors.tiers[tierIndex]?.rewards?.[rewardIndex]?.description?.message)}</p>}
-                </div>
-              )}
-
-              {(currentReward.reward_type === 'Discount' || currentReward.reward_type === 'Cashback') && (
-                <div>
-                  <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.value`}>
-                    {currentReward.reward_type === 'Discount' ? 'Percentage' : 'Amount'}
-                  </Label>
-                  <Input id={`tiers.${tierIndex}.rewards.${rewardIndex}.value`} type="number" {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.value`, { valueAsNumber: true })} disabled={isLoading} className="w-full min-w-0" />
-                  {Array.isArray(errors?.tiers) &&
-                    errors.tiers[tierIndex] &&
-                    Array.isArray((errors.tiers[tierIndex])?.rewards) &&
-                    (errors.tiers[tierIndex]).rewards[rewardIndex]?.value && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {String((errors.tiers[tierIndex]).rewards[rewardIndex]?.value?.message)}
-                      </p>
+                  <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.percentage`}>Cashback Percentage</Label>
+                  <Input
+                    id={`tiers.${tierIndex}.rewards.${rewardIndex}.percentage`}
+                    type="number"
+                    {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.percentage`, { valueAsNumber: true })}
+                    disabled={isLoading}
+                    className="w-full min-w-0 focus:border-indigo-400 focus:ring-indigo-500"
+                    placeholder="e.g., 5"
+                    min="1"
+                    max="100"
+                  />
+                  {errors?.tiers?.[tierIndex]?.rewards?.[rewardIndex] && (
+                    <p className="text-red-500 text-sm mt-1">
+                      Error in reward data
+                    </p>
                   )}
                 </div>
               )}
 
+              {/* Limited Usage Reward Fields */}
+              {rewardData.reward_type === 'limited_usage' && (
+                <>
+                  <div>
+                    <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.reward_text`}>Reward Text</Label>
+                    <Input
+                      id={`tiers.${tierIndex}.rewards.${rewardIndex}.reward_text`}
+                      {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.reward_text`)}
+                      disabled={isLoading}
+                      className="w-full min-w-0 focus:border-indigo-400 focus:ring-indigo-500"
+                      placeholder="e.g., 20% off on next purchase"
+                    />
+                    {errors?.tiers?.[tierIndex]?.rewards?.[rewardIndex] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Error in reward text
+                      </p>
+                    )}
+                  </div>
+
+
+
+
+
+                  <div>
+                    <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.usage_limit_per_month`}>Usage Limit Per Month</Label>
+                    <Input
+                      id={`tiers.${tierIndex}.rewards.${rewardIndex}.usage_limit_per_month`}
+                      type="number"
+                      step="0.5"
+                      {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.usage_limit_per_month`, { valueAsNumber: true })}
+                      disabled={isLoading || rewardData.one_time}
+                      className="w-full min-w-0 focus:border-indigo-400 focus:ring-indigo-500"
+                      placeholder="e.g., 2 (twice per month), 0.5 (bi-monthly)"
+                      min="0.5"
+                      max="12"
+                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {rewardData.one_time ? 'Disabled for one-time rewards' : '2 = twice per month, 0.5 = bi-monthly, 1 = monthly'}
+                    </div>
+                    {errors?.tiers?.[tierIndex]?.rewards?.[rewardIndex] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Error in reward data
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`tiers.${tierIndex}.rewards.${rewardIndex}.one_time`}
+                      {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.one_time`)}
+                      disabled={isLoading}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.one_time`}>One-time reward only</Label>
+                  </div>
+                </>
+              )}
+
+              {/* Custom Reward Fields */}
+              {rewardData.reward_type === 'custom' && (
+                <>
+                  <div>
+                    <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.name`}>Reward Name</Label>
+                    <Input
+                      id={`tiers.${tierIndex}.rewards.${rewardIndex}.name`}
+                      {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.name`)}
+                      disabled={isLoading}
+                      className="w-full min-w-0 focus:border-indigo-400 focus:ring-indigo-500"
+                      placeholder="e.g., VIP Access"
+                    />
+                    {errors?.tiers?.[tierIndex]?.rewards?.[rewardIndex] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Error in reward name
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`tiers.${tierIndex}.rewards.${rewardIndex}.reward`}>Reward Description</Label>
+                    <Textarea
+                      id={`tiers.${tierIndex}.rewards.${rewardIndex}.reward`}
+                      {...register(`tiers.${tierIndex}.rewards.${rewardIndex}.reward`)}
+                      disabled={isLoading}
+                      className="w-full min-w-0 focus:border-indigo-400 focus:ring-indigo-500"
+                      placeholder="e.g., Exclusive access to premium services and priority support"
+                    />
+                    {errors?.tiers?.[tierIndex]?.rewards?.[rewardIndex] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Error in reward description
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );
       })}
       <Button
         type="button"
-        onClick={() => appendReward({ reward_type: 'Free Item', description: '', value: 0 })}
+        onClick={handleAddReward}
         disabled={isLoading}
         variant="ghost"
-        className="w-full text-blue-600 hover:text-blue-800 border"
+        className="w-full text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-300"
       >
         + Add Reward
       </Button>

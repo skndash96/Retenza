@@ -20,7 +20,9 @@ export const {
   customers,
   customerLoyalty,
   loyaltyPrograms,
-  campaigns,
+  missions,
   transactions,
   sessions,
+  rewardRedemptions,
+  missionRegistry,
 } = schema;

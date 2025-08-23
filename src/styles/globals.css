@@ -5,7 +5,6 @@
 
 /* Optional animations */
 
-
 /* Custom theme variables */
 :root {
   --radius: 0.625rem;
@@ -38,6 +37,24 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom Retenza theme colors */
+  --retenza-primary: #4f46e5;
+  /* indigo-600 */
+  --retenza-primary-dark: #3730a3;
+  /* indigo-800 */
+  --retenza-secondary: #7c3aed;
+  /* purple-600 */
+  --retenza-secondary-dark: #5b21b6;
+  /* purple-800 */
+  --retenza-accent: #6366f1;
+  /* indigo-500 */
+  --retenza-accent-light: #a5b4fc;
+  /* indigo-300 */
+  --retenza-accent-bg: #eef2ff;
+  /* indigo-50 */
+  --retenza-accent-border: #c7d2fe;
+  /* indigo-200 */
 }
 
 .dark {
@@ -56,7 +73,26 @@
   body {
     @apply bg-background text-foreground;
   }
+
   * {
     @apply border-gray-300;
+  }
+}
+
+/* Custom Retenza theme utilities */
+@layer utilities {
+  .bg-retenza-gradient {
+    background: linear-gradient(135deg, var(--retenza-primary) 0%, var(--retenza-secondary) 100%);
+  }
+
+  .text-retenza-gradient {
+    background: linear-gradient(135deg, var(--retenza-primary) 0%, var(--retenza-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-retenza-gradient {
+    border-image: linear-gradient(135deg, var(--retenza-primary) 0%, var(--retenza-secondary) 100%) 1;
   }
 }

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, gender, dob, anniversary } = await req.json() as { name?: string; gender?: string; dob?: number; anniversary?: number };
+    const { name, gender, dob, anniversary } = await req.json() as { name?: string; gender?: 'Male' | 'Female' | 'Other'; dob?: number; anniversary?: number };
 
     const dobDate = dob ? new Date(dob) : null;
     const anniversaryDate = anniversary ? new Date(anniversary) : null;
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         gender,
         dob: dobDate,
         anniversary: anniversaryDate,
-        is_setup_complete: true, 
+        is_setup_complete: true,
         updated_at: new Date(),
       })
       .where(eq(customers.id, sessionUser.id));

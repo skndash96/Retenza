@@ -8,7 +8,7 @@ import {
   jsonb,
   primaryKey,
   boolean,
-
+  decimal,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 // ====================================================================================
@@ -17,15 +17,23 @@ import { relations } from "drizzle-orm";
 
 export const businesses = pgTable("businesses", {
   id: serial("id").primaryKey(),
-  
+
   phone_number: varchar("phone_number", { length: 20 }).unique().notNull(),
   hashed_password: text("hashed_password").notNull(),
 
   name: text("name").notNull(),
   address: text("address"),
   business_type: varchar("business_type", { length: 50 }),
+  description: text("description"),
+  email: varchar("email", { length: 255 }),
+  contact_number: varchar("contact_number", { length: 20 }),
   contact_number_2: varchar("contact_number_2", { length: 20 }),
+  gmap_link: varchar("gmap_link", { length: 500 }),
+  logo_url: varchar("logo_url", { length: 500 }),
+  additional_info: jsonb("additional_info").$type<Record<string, any>>().default({}),
   is_setup_complete: boolean("is_setup_complete").default(false),
+  approved: boolean("approved").default(false).notNull(),
+  user_id: integer("user_id").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -37,7 +45,7 @@ export const customers = pgTable("customers", {
   hashed_password: text("hashed_password").notNull(),
 
   name: text("name"),
-  gender: varchar("gender", { length: 10 }),
+  gender: varchar("gender", { length: 10 }).$type<'Male' | 'Female' | 'Other'>(),
   dob: timestamp("dob"),
   anniversary: timestamp("anniversary"),
   is_setup_complete: boolean("is_setup_complete").default(false),
@@ -50,14 +58,22 @@ export const customers = pgTable("customers", {
 // ====================================================================================
 
 export type Tier = {
-    id: number;
-    name: string;
-    points_to_unlock: number;
-    rewards: {
-        reward_type: string;
-        description: string;
-        value: number;
-    }[];
+  id: number;
+  name: string;
+  points_to_unlock: number;
+  rewards: {
+    id: number; // Unique ID for each reward
+    reward_type: 'cashback' | 'limited_usage' | 'custom';
+    // Cashback reward fields
+    percentage?: number;
+    // Limited usage reward fields
+    reward_text?: string;
+    usage_limit_per_month?: number; // How many times per month (e.g., 2 = twice per month, 0.5 = bi-monthly)
+    one_time?: boolean;
+    // Custom reward fields
+    name?: string;
+    reward?: string;
+  }[];
 };
 
 export const loyaltyPrograms = pgTable("loyalty_programs", {
@@ -76,6 +92,7 @@ export const customerLoyalty = pgTable("customer_loyalty", {
   customer_id: integer("customer_id").notNull(),
   business_id: integer("business_id").notNull(),
   points: integer("points").default(0).notNull(),
+  redeemable_points: decimal("redeemable_points", { precision: 10, scale: 2 }).default("0.00").notNull(),
   current_tier_name: varchar("current_tier_name", { length: 50 }),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
@@ -87,13 +104,22 @@ export const customerLoyalty = pgTable("customer_loyalty", {
 // D. Missions & Campaigns
 // ====================================================================================
 
-export const campaigns = pgTable("campaigns", {
+export const missions = pgTable("missions", {
   id: serial("id").primaryKey(),
   business_id: integer("business_id").notNull(),
   title: text("title").notNull(),
   description: text("description").notNull(),
+  offer: text("offer").notNull(),
   applicable_tiers: jsonb("applicable_tiers").$type<string[]>().notNull().default([]),
+  filters: jsonb("filters").$type<{
+    gender?: ('Male' | 'Female' | 'Other')[];
+    age_range?: { min: number; max: number };
+    location?: string[];
+    customer_type?: string[];
+  }>().default({}),
+  is_active: boolean("is_active").default(true).notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
   expires_at: timestamp("expires_at").notNull(),
 });
 
@@ -105,9 +131,24 @@ export const transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
   customer_id: integer("customer_id").notNull(),
   business_id: integer("business_id").notNull(),
-  bill_amount: integer("bill_amount").notNull(),
+  bill_amount: decimal("bill_amount", { precision: 10, scale: 2 }).notNull(),
   points_awarded: integer("points_awarded").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ====================================================================================
+// F. Reward Redemptions
+// ====================================================================================
+
+export const rewardRedemptions = pgTable("reward_redemptions", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  business_id: integer("business_id").notNull(),
+  reward_id: text("reward_id").notNull(),
+  reward_type: varchar("reward_type", { length: 50 }).notNull(),
+  reward_value: decimal("reward_value", { precision: 10, scale: 2 }).notNull(),
+  transaction_id: integer("transaction_id").notNull(),
+  redeemed_at: timestamp("redeemed_at").defaultNow().notNull(),
 });
 
 // ====================================================================================
@@ -122,7 +163,35 @@ export const sessions = pgTable("sessions", {
 });
 
 // ====================================================================================
-// G. Drizzle Relations 
+// G. Push Notifications
+// ====================================================================================
+
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  business_id: integer("business_id").notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  business_id: integer("business_id").notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // 'points_earned', 'reward_unlocked', 'goal_nudge', 'inactivity_winback', 'trending_missions', 'tier_rewards'
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  data: jsonb("data").$type<Record<string, any>>().default({}),
+  is_read: boolean("is_read").default(false),
+  sent_at: timestamp("sent_at").defaultNow().notNull(),
+  read_at: timestamp("read_at"),
+});
+
+// ====================================================================================
+// H. Drizzle Relations 
 // ====================================================================================
 
 export const businessRelations = relations(businesses, ({ one, many }) => ({
@@ -131,15 +200,19 @@ export const businessRelations = relations(businesses, ({ one, many }) => ({
     references: [loyaltyPrograms.business_id],
   }),
   customerLoyalty: many(customerLoyalty),
-  campaigns: many(campaigns),
+  missions: many(missions),
   transactions: many(transactions),
   sessions: many(sessions),
+  pushSubscriptions: many(pushSubscriptions),
+  notifications: many(notifications),
 }));
 
 export const customerRelations = relations(customers, ({ many }) => ({
   customerLoyalty: many(customerLoyalty),
   transactions: many(transactions),
   sessions: many(sessions),
+  pushSubscriptions: many(pushSubscriptions),
+  notifications: many(notifications),
 }));
 
 export const customerLoyaltyRelations = relations(customerLoyalty, ({ one }) => ({
@@ -160,9 +233,9 @@ export const loyaltyProgramRelations = relations(loyaltyPrograms, ({ one }) => (
   }),
 }));
 
-export const campaignRelations = relations(campaigns, ({ one }) => ({
+export const missionRelations = relations(missions, ({ one }) => ({
   business: one(businesses, {
-    fields: [campaigns.business_id],
+    fields: [missions.business_id],
     references: [businesses.id],
   }),
 }));
@@ -188,13 +261,66 @@ export const sessionRelations = relations(sessions, ({ one }) => ({
     references: [customers.id],
   }),
 }));
+
+export const pushSubscriptionRelations = relations(pushSubscriptions, ({ one }) => ({
+  customer: one(customers, {
+    fields: [pushSubscriptions.customer_id],
+    references: [customers.id],
+  }),
+  business: one(businesses, {
+    fields: [pushSubscriptions.business_id],
+    references: [businesses.id],
+  }),
+}));
+
+export const notificationRelations = relations(notifications, ({ one }) => ({
+  customer: one(customers, {
+    fields: [notifications.customer_id],
+    references: [customers.id],
+  }),
+  business: one(businesses, {
+    fields: [notifications.business_id],
+    references: [businesses.id],
+  }),
+}));
+export const missionRegistry = pgTable("mission_registry", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  mission_id: integer("mission_id").notNull(),
+  business_id: integer("business_id").notNull(),
+  status: text("status").notNull().$type<'in_progress' | 'completed' | 'failed'>(),
+  started_at: timestamp("started_at").defaultNow(),
+  completed_at: timestamp("completed_at"),
+  discount_amount: decimal("discount_amount", { precision: 10, scale: 2 }).default('0'),
+  discount_percentage: decimal("discount_percentage", { precision: 5, scale: 2 }).default('0'),
+  notes: text("notes"),
+});
+
+export const missionRegistryRelations = relations(missionRegistry, ({ one }) => ({
+  customer: one(customers, {
+    fields: [missionRegistry.customer_id],
+    references: [customers.id],
+  }),
+  mission: one(missions, {
+    fields: [missionRegistry.mission_id],
+    references: [missions.id],
+  }),
+  business: one(businesses, {
+    fields: [missionRegistry.business_id],
+    references: [businesses.id],
+  }),
+}));
+
 export const schema = {
   businesses,
   customers,
   loyaltyPrograms,
-  customerLoyalty,
-  campaigns,
+  missions,
   transactions,
+  rewardRedemptions,
   sessions,
+  pushSubscriptions,
+  notifications,
+  missionRegistry,
 };
 

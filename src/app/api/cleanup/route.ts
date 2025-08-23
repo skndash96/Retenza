@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { campaigns, sessions } from '@/server/db/schema';
+import { missions, sessions } from '@/server/db/schema';
 import { lt } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
@@ -15,19 +15,19 @@ export async function GET(req: NextRequest) {
 
     await db.transaction(async (tx) => {
       await tx.delete(sessions).where(lt(sessions.expiresAt, now));
-      await tx.delete(campaigns).where(lt(campaigns.expires_at, now));
+      await tx.delete(missions).where(lt(missions.expires_at, now));
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Expired sessions and campaigns removed.' 
+    return NextResponse.json({
+      success: true,
+      message: 'Expired sessions and campaigns removed.'
     }, { status: 200 });
 
   } catch (error) {
     console.error('Database cleanup failed:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Failed to perform cleanup.' 
+    return NextResponse.json({
+      success: false,
+      message: 'Failed to perform cleanup.'
     }, { status: 500 });
   }
 }

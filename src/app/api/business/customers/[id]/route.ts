@@ -57,7 +57,7 @@ export async function POST(
   const insertedTxn = await db.insert(transactions).values({
     customer_id: customerId,
     business_id: businessId,
-    bill_amount: billAmountInt,
+    bill_amount: billAmountInt.toFixed(2),
     points_awarded: pointsAwarded,
   }).returning();
 
@@ -74,12 +74,18 @@ export async function POST(
     if (lp?.tiers?.length) {
       const tiers = lp.tiers as Array<{ points_to_unlock: number; name: string }>;
       tiers.sort((a, b) => a.points_to_unlock - b.points_to_unlock);
-      for (const t of tiers) if (newPoints >= t.points_to_unlock) newTier = t.name;
+      // Find the highest tier the customer qualifies for
+      for (let i = tiers.length - 1; i >= 0; i--) {
+        if (newPoints >= tiers[i].points_to_unlock) {
+          newTier = tiers[i].name;
+          break; // Found the highest qualifying tier
+        }
+      }
     }
 
     await db
       .update(customerLoyalty)
-      .set({ 
+      .set({
         ...(customerLoyalty.points && { [customerLoyalty.points.name]: newPoints }),
         ...(customerLoyalty.current_tier_name && { [customerLoyalty.current_tier_name.name]: newTier })
       })
@@ -89,7 +95,13 @@ export async function POST(
     if (lp?.tiers?.length) {
       const tiers = lp.tiers as Array<{ points_to_unlock: number; name: string }>;
       tiers.sort((a, b) => a.points_to_unlock - b.points_to_unlock);
-      for (const t of tiers) if (pointsAwarded >= t.points_to_unlock) initialTier = t.name;
+      // Find the highest tier the customer qualifies for
+      for (let i = tiers.length - 1; i >= 0; i--) {
+        if (pointsAwarded >= tiers[i].points_to_unlock) {
+          initialTier = tiers[i].name;
+          break; // Found the highest qualifying tier
+        }
+      }
     }
     await db.insert(customerLoyalty).values({
       customer_id: customerId,
