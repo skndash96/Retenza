@@ -1,14 +1,17 @@
 'use client';
 import Link from 'next/link';
 import LoginForm from '@/components/ui/loginForm';
+import ForgotPasswordForm from '@/components/ui/forgotPasswordForm';
 import { useRouter } from 'next/navigation';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { Building2, BarChart3, Users, Target } from 'lucide-react';
+import { useState } from 'react';
 
 export default function BusinessLogin() {
   const router = useRouter();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleLogin = async (data: { phone: string; password: string }) => {
     const phoneNumber = parsePhoneNumberFromString(data.phone, 'IN');
@@ -87,31 +90,38 @@ export default function BusinessLogin() {
           variants={container}
           className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12"
         >
-          <motion.div variants={fadeUp} className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-8 h-8 text-white" />
+          {showForgotPassword ? (
+            <ForgotPasswordForm
+              onBack={() => setShowForgotPassword(false)}
+              userType="business"
+            />
+          ) : (
+            <motion.div variants={fadeUp} className="w-full max-w-md">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-8 h-8 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Dashboard</h1>
+                <p className="text-gray-600">Access your business analytics and customer insights</p>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Dashboard</h1>
-              <p className="text-gray-600">Access your business analytics and customer insights</p>
-            </div>
 
-            <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-gray-100">
-              <LoginForm onLogin={handleLogin} />
+              <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-gray-100">
+                <LoginForm onLogin={handleLogin} onForgotPassword={() => setShowForgotPassword(true)} />
 
-              <motion.div variants={fadeUp} className="mt-8 text-center">
-                <p className="text-gray-600">
-                  Don&apos;t have a business account?{' '}
-                  <Link
-                    href="/signup/business"
-                    className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
-                  >
-                    Sign up here
-                  </Link>
-                </p>
-              </motion.div>
-            </div>
-          </motion.div>
+                <motion.div variants={fadeUp} className="mt-8 text-center">
+                  <p className="text-gray-600">
+                    Don&apos;t have a business account?{' '}
+                    <Link
+                      href="/signup/business"
+                      className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+                    >
+                      Sign up here
+                    </Link>
+                  </p>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.div

@@ -5,15 +5,16 @@ import LoginButton from '@/components/ui/loginButton';
 
 interface LoginFormProps {
   onLogin: (data: { phone: string; password: string; }) => Promise<void>;
+  onForgotPassword: () => void;
 }
 
-export default function LoginForm({ onLogin }: LoginFormProps) {
+export default function LoginForm({ onLogin, onForgotPassword }: LoginFormProps) {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    void onLogin({phone, password});
+    void onLogin({ phone, password });
   };
 
   return (
@@ -44,8 +45,18 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           className="w-full px-4 py-2 border border-accent-light rounded-md focus:outline-none focus:ring-2 focus:ring-accent-pink bg-background-light"
         />
       </div>
-    
+
       <LoginButton content="Log In" type="submit" />
+
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={onForgotPassword}
+          className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          Forgot your password?
+        </button>
+      </div>
     </form>
   );
 }
