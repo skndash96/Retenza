@@ -133,14 +133,7 @@ export default function AdminLoginPage() {
                             </Button>
                         </form>
 
-                        <div className="mt-6 text-center">
-                            <p className="text-sm text-gray-500">
-                                Admin credentials are configured via environment variables.<br />
-                                <span className="text-xs text-gray-400 mt-1 block">
-                                    Default: admin/admin (change in .env file)
-                                </span>
-                            </p>
-                        </div>
+
                     </CardContent>
                 </Card>
             </motion.div>
