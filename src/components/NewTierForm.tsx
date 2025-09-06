@@ -30,7 +30,7 @@ export function NewTierForm({ isOpen, onClose, onSave, disabled = false }: NewTi
     });
 
     const handleSave = () => {
-        if (!tierData.name || tierData.points_to_unlock <= 0) return;
+        if (!tierData.name || tierData.points_to_unlock < 0) return;
         onSave(tierData);
         handleClose();
     };
@@ -147,7 +147,7 @@ export function NewTierForm({ isOpen, onClose, onSave, disabled = false }: NewTi
                         </Button>
                         <Button
                             onClick={handleSave}
-                            disabled={disabled || !tierData.name || tierData.points_to_unlock <= 0}
+                            disabled={disabled || !tierData.name || tierData.points_to_unlock < 0}
                             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                         >
                             <Save className="w-4 h-4 mr-2" />

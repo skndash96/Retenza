@@ -80,7 +80,7 @@ export function TierManager({
                             <Button
                                 size="sm"
                                 onClick={handleSave}
-                                disabled={disabled || !editData.name || editData.points_to_unlock <= 0}
+                                disabled={disabled || !editData.name || editData.points_to_unlock < 0}
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
                             >
                                 <Save className="w-4 h-4 mr-2" />
