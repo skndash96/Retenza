@@ -44,7 +44,7 @@ const tierSchema = z.object({
 
 const loyaltyProgramFormSchema = z.object({
   points_rate: z.number().int().positive('Points rate must be a positive integer.').min(1, 'Points rate must be at least 1.'),
-  description: z.string().min(5, 'A loyalty program description is required.'),
+  description: z.string().min(10, 'A loyalty program description is required.'),
   tiers: z.array(tierSchema).min(1, 'At least one loyalty tier is required.'),
 });
 
@@ -114,6 +114,7 @@ export function LoyaltyProgramForm({
             <div>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                 Program Description
+                <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="description"
