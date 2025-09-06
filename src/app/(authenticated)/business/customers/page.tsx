@@ -725,7 +725,6 @@ export default function BusinessCashierPage() {
                           type="number"
                           placeholder="0.00"
                           value={redeemablePointsToUse}
-                          value={redeemablePointsToUse}
                           onChange={(e) => {
                             setHasEditedRedeemable(true);
                             const value = parseFloat(e.target.value) || 0;
