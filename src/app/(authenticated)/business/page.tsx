@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trophy, TrendingUp, Users, RefreshCcw, DollarSign, Target, Activity, Star, BarChart3 } from 'lucide-react';
+import { Loader2, Trophy, TrendingUp, Users, RefreshCcw, Target, Activity, Star, BarChart3, IndianRupee } from 'lucide-react';
 import { BusinessNotificationPanel } from '@/components/BusinessNotificationPanel';
 import BusinessApprovalWrapper from '@/components/BusinessApprovalWrapper';
 import {
@@ -179,7 +179,7 @@ export default function BusinessDashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[{
-            title: 'Total Revenue', value: `₹${(payload?.totalRevenue ?? 0).toLocaleString()}`, icon: DollarSign, desc: 'from all transactions'
+            title: 'Total Revenue', value: `₹${(payload?.totalRevenue ?? 0).toLocaleString()}`, icon: IndianRupee, desc: 'from all transactions'
           }, {
             title: 'Total Points', value: (payload?.totalPoints ?? 0).toLocaleString(), icon: Trophy, desc: 'awarded to customers'
           }, {

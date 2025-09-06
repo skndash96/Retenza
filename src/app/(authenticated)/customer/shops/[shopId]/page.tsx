@@ -15,7 +15,7 @@ import {
   MapPin,
   Building2,
   Award,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
 
 // Define the reward structure based on actual API response
@@ -303,7 +303,7 @@ export default function ShopDetailsPage() {
                       <div key={tx.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <DollarSign className="w-5 h-5 text-blue-600" />
+                            <IndianRupee className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">

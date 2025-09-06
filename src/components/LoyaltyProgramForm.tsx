@@ -38,13 +38,13 @@ const rewardSchema = z.discriminatedUnion('reward_type', [
 
 const tierSchema = z.object({
   name: z.string().min(1, 'Tier name is required.'),
-  points_to_unlock: z.number().int().positive('Points must be a positive integer.').min(1, 'Points must be at least 1.'),
+  points_to_unlock: z.number().int().positive('Points must be a positive integer.').min(0, 'Points must be at least 0.'),
   rewards: z.array(rewardSchema).min(1, 'At least one reward is required per tier.'),
 });
 
 const loyaltyProgramFormSchema = z.object({
   points_rate: z.number().int().positive('Points rate must be a positive integer.').min(1, 'Points rate must be at least 1.'),
-  description: z.string().min(5, 'A loyalty program description is required.'),
+  description: z.string().min(10, 'A loyalty program description is required.'),
   tiers: z.array(tierSchema).min(1, 'At least one loyalty tier is required.'),
 });
 
@@ -75,7 +75,7 @@ export function LoyaltyProgramForm({
       tiers: [
         {
           name: 'Bronze',
-          points_to_unlock: 1,
+          points_to_unlock: 0,
           rewards: [{ reward_type: 'cashback', percentage: 5 }],
         },
       ],
@@ -114,6 +114,7 @@ export function LoyaltyProgramForm({
             <div>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                 Program Description
+                <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="description"
