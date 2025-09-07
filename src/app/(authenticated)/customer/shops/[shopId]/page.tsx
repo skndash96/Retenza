@@ -403,29 +403,6 @@ export default function ShopDetailsPage() {
               </Card>
             )}
 
-            <Card className="border-0 shadow-sm bg-white rounded-2xl">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900">Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <span className="text-sm text-gray-600">Total Spent</span>
-                  <span className="font-semibold text-blue-600">
-                    ₹{transactions.reduce((sum, tx) => sum + Number(tx.bill_amount), 0).toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <span className="text-sm text-gray-600">Total Earned</span>
-                  <span className="font-semibold text-green-600">
-                    {transactions.reduce((sum, tx) => sum + tx.points_awarded, 0)} pts
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <span className="text-sm text-gray-600">Visit Count</span>
-                  <span className="font-semibold text-purple-600">{transactions.length}</span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
