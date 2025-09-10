@@ -402,7 +402,6 @@ export default function ShopDetailsPage() {
                 </CardContent>
               </Card>
             )}
-
           </div>
         </div>
       </div>
