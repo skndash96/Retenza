@@ -92,6 +92,7 @@ export default function CustomerSignup() {
       setServerError(null);
       toast.success('OTP has been sent to your phone number!');
     } catch (error: unknown) {
+      console.error('Error during signInWithPhoneNumber:', error);
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const firebaseError = error as { code: string };
 

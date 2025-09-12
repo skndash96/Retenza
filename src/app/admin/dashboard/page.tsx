@@ -15,7 +15,8 @@ import {
     Search,
     LogOut,
     Target,
-    Filter
+    Filter,
+    Trash2
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -93,10 +94,35 @@ export default function AdminDashboardPage() {
         setFilteredBusinesses(filtered);
     };
 
+    const handleDelete = async (businessId: number) => {
+        if (!confirm("Are you sure you want to delete this business? This action cannot be undone.")) {
+            return;
+        }
+
+        setIsUpdating(true);
+
+        try {
+            const response = await fetch(`/api/admin/businesses/${businessId}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                toast.success("Business deleted successfully");
+                void fetchBusinesses(); // Refresh the list
+            } else {
+                toast.error("Failed to delete business");
+            }
+        } catch {
+            toast.error("Error deleting business");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const handleApproval = async (businessId: number, approved: boolean) => {
         setIsUpdating(true);
         try {
-            const response = await fetch(`/api/admin/businesses/${businessId}/approve`, {
+            const response = await fetch(`/api/admin/businesses/${businessId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -343,14 +369,24 @@ export default function AdminDashboardPage() {
                                                             </Button>
                                                         </>
                                                     ) : (
-                                                        <div className="text-center">
+                                                        <div className="text-center space-y-2">
                                                             <Badge variant="default" className="text-green-600 bg-green-100">
                                                                 <CheckCircle className="w-4 h-4 mr-1" />
                                                                 Approved
                                                             </Badge>
-                                                            <p className="text-xs text-gray-500 mt-1">
+                                                            <p className="text-xs text-gray-500">
                                                                 Approved on {new Date(business.created_at).toLocaleDateString()}
                                                             </p>
+                                                            <Button
+                                                                onClick={() => handleDelete(business.id)}
+                                                                disabled={isUpdating}
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                className="w-full"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </Button>
                                                         </div>
                                                     )}
                                                 </div>
@@ -365,4 +401,4 @@ export default function AdminDashboardPage() {
             </div>
         </div>
     );
-} 
+}

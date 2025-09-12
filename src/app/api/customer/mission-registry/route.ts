@@ -123,4 +123,52 @@ export async function POST(req: NextRequest) {
         console.error("Error starting mission:", error);
         return NextResponse.json({ error: "Failed to start mission" }, { status: 500 });
     }
-} 
+}
+
+// End a mission (mark as completed or failed)
+export async function DELETE(req: NextRequest) {
+    try {
+        const customer = await getCustomerFromSession();
+
+        if (!customer) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await req.json() as { mission_id: number; business_id: number };
+
+        const { mission_id, business_id } = body;
+
+        if (!mission_id || !business_id) {
+            return NextResponse.json({ error: "Mission ID, business ID are required" }, { status: 400 });
+        }
+
+        // Get existing mission registry
+        const existingRegistry = await db.select()
+            .from(missionRegistry)
+            .where(and(
+                eq(missionRegistry.customer_id, customer.id),
+                eq(missionRegistry.mission_id, mission_id),
+                eq(missionRegistry.status, 'in_progress')
+            ))
+            .limit(1);
+
+        if (existingRegistry.length === 0) {
+            return NextResponse.json({ error: "No in-progress mission found to update" }, { status: 404 });
+        }
+
+        const registry = existingRegistry[0];
+
+        // Delete mission registry
+        await db.delete(missionRegistry)
+            .where(eq(missionRegistry.id, registry.id));
+
+        return NextResponse.json({
+            success: true,
+            message: `Mission deleted successfully`,
+            mission_id
+        });
+    } catch (error) {
+        console.error("Error updating mission:", error);
+        return NextResponse.json({ error: "Failed to update mission" }, { status: 500 });
+    }
+}

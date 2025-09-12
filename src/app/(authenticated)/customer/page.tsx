@@ -250,10 +250,10 @@ export default function CustomerDashboard() {
             Welcome back, {user?.name ?? 'Valued Customer'}!
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            Your Loyalty Dashboard
+            Rewards &amp; Missions
           </h1>
           <p className="text-base text-gray-600 max-w-xl mx-auto">
-            Track your progress, discover new shops, and unlock exclusive rewards.
+            Discover shops, complete challenges, and grab your prizes.
           </p>
         </motion.div>
 
