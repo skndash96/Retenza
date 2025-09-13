@@ -3,6 +3,38 @@ import { db } from "@/server/db";
 import { businesses } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
+export async function DELETE(
+    _: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        
+        const result = await db
+            .delete(businesses)
+            .where(eq(businesses.id, parseInt(id)))
+            .returning();
+        
+        if (result.length === 0) {
+            return NextResponse.json(
+                { success: false, error: "Business not found" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: "Business deleted successfully",
+        });
+    } catch (error) {
+        console.error("Error deleting business:", error);
+        return NextResponse.json(
+            { success: false, error: "Failed to delete business" },
+            { status: 500 }
+        );
+    }
+}
+
 export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }

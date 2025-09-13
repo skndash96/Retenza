@@ -13,11 +13,15 @@ import {
   ArrowRight,
   Flame,
   User,
-  Heart
+  Heart,
+  Clock,
+  MoreVertical
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Link from 'next/link';
 
 interface Shop {
   shopId: string;
@@ -65,6 +69,36 @@ export default function CustomerDashboard() {
       router.push('/login/customer');
     }
   }, [authLoading, user, role, router]);
+
+  const cancelMission = async (mission: Mission) => {
+    try {
+      const response = await fetch(`/api/customer/mission-registry`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          business_id: mission.business_id,
+          mission_id: mission.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error ?? 'Failed to cancel mission.');
+      }
+
+      toast.success('Mission cancelled successfully.');
+      setOngoingMissions(prev => {
+        const updated = new Set(prev);
+        updated.delete(mission.id);
+        return updated;
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel mission';
+      toast.error(errorMessage);
+    }
+  }
 
   // Function to start a mission
   const startMission = async (missionId: string, businessId: number) => {
@@ -250,10 +284,10 @@ export default function CustomerDashboard() {
             Welcome back, {user?.name ?? 'Valued Customer'}!
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            Your Loyalty Dashboard
+            Rewards &amp; Missions
           </h1>
           <p className="text-base text-gray-600 max-w-xl mx-auto">
-            Track your progress, discover new shops, and unlock exclusive rewards.
+            Discover shops, complete challenges, and grab your prizes.
           </p>
         </motion.div>
 
@@ -395,7 +429,7 @@ export default function CustomerDashboard() {
           {topMissions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {topMissions.map((mission, index) => (
-                <Card key={mission.id} className="border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all duration-200 cursor-pointer group">
+                <Card key={mission.id} className="border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all duration-200 group">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700 border-orange-200">
@@ -417,13 +451,24 @@ export default function CustomerDashboard() {
                     </div>
 
                     {ongoingMissions.has(mission.id) ? (
-                      <Button
-                        disabled
-                        size="sm"
-                        className="w-full bg-gray-400 text-white text-xs cursor-not-allowed"
-                      >
-                        <Target className="w-3 h-3 mr-1" />
-                        Mission in Progress
+                      <Button asChild className="w-full bg-gray-400 hover:bg-gray-400 text-white text-xs">
+                        <div className='flex items-center'>
+                          <span className='flex grow items-center'>
+                            <Clock className="w-4 h-4 mr-2 inline-block" />
+                            In Progress
+                          </span>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <MoreVertical className="w-4 h-4 ml-4 inline-block" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className='bg-white'>
+                              <DropdownMenuItem onClick={() => cancelMission(mission)}>
+                                Quit
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </Button>
                     ) : (
                       <Button
@@ -498,33 +543,27 @@ export default function CustomerDashboard() {
               <div className="mt-4">
                 <h3 className="font-semibold text-gray-800 mb-3 text-sm">Quick Actions</h3>
                 <div className="grid grid-cols-1 gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start border-gray-200 text-gray-700 hover:bg-gray-50"
-                    onClick={() => router.push('/customer/missions')}
-                  >
+                    <Link
+                    href="/customer/missions"
+                    className="inline-flex items-center justify-start border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
                     <Target className="w-4 h-4 mr-2" />
                     View All Missions
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start border-gray-200 text-gray-700 hover:bg-gray-50"
-                    onClick={() => router.push('/customer/shops')}
-                  >
+                    </Link>
+                    <Link
+                    href="/customer/shops"
+                    className="inline-flex items-center justify-start border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
                     <Store className="w-4 h-4 mr-2" />
                     Browse Shops
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start border-gray-200 text-gray-700 hover:bg-gray-50"
-                    onClick={() => router.push('/customer/profile')}
-                  >
+                    </Link>
+                    <Link
+                    href="/customer/profile"
+                    className="inline-flex items-center justify-start border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
                     <User className="w-4 h-4 mr-2" />
                     Update Profile
-                  </Button>
+                    </Link>
                 </div>
               </div>
             </div>
