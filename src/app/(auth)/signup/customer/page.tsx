@@ -52,7 +52,7 @@ export default function CustomerSignup() {
     }
   }, [recaptchaRef, recaptchaVerifier]);
 
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, watch, getValues } = useForm<FormData>({
     resolver: zodResolver(customerSignupSchema),
     defaultValues: {
       phone_number: '',
@@ -67,6 +67,31 @@ export default function CustomerSignup() {
   const handleSendOtp = async () => {
     setLoading(true);
     setServerError(null);
+
+    // Get current form values
+    const currentValues = getValues();
+
+    // Validate password fields before sending OTP
+    if (!currentValues.password || !currentValues.confirmPassword) {
+      toast.error('Please fill in both password fields.');
+      setServerError('Please fill in both password fields.');
+      setLoading(false);
+      return;
+    }
+
+    if (currentValues.password.length < 8) {
+      toast.error('Password must be at least 8 characters long.');
+      setServerError('Password must be at least 8 characters long.');
+      setLoading(false);
+      return;
+    }
+
+    if (currentValues.password !== currentValues.confirmPassword) {
+      toast.error('Passwords do not match. Please check and try again.');
+      setServerError('Passwords do not match. Please check and try again.');
+      setLoading(false);
+      return;
+    }
 
     if (!recaptchaVerifier) {
       toast.error('reCAPTCHA is not initialized. Please refresh the page.');
