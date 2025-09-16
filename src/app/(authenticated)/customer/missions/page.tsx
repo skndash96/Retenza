@@ -26,6 +26,7 @@ import {
   MoreVertical
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import MissionExplanation from '@/components/MissionExplaination';
 
 interface Mission {
   id: number;
@@ -394,6 +395,8 @@ export default function CustomerMissionsPage() {
             </Button>
           </div>
         </div>
+
+        <MissionExplanation />
 
         {/* Smart Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
