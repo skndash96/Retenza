@@ -21,6 +21,7 @@ export async function GET(_req: NextRequest) {
       id: mission.id,
       title: mission.title ? String(mission.title) : "",
       description: mission.description ? String(mission.description) : "",
+      offer: mission.offer || "",
       expires_at: mission.expires_at,
       applicable_tiers: Array.isArray(mission.applicable_tiers)
         ? mission.applicable_tiers.map((t) =>

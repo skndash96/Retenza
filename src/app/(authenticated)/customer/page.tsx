@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import MissionExplanation from '@/components/MissionExplaination';
 
 interface Shop {
   shopId: string;
@@ -277,7 +278,7 @@ export default function CustomerDashboard() {
           initial="hidden"
           animate="show"
           variants={fadeUp}
-          className="text-center mb-6"
+          className="text-center"
         >
           <div className="inline-flex items-center bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-3">
             <Sparkles className="w-4 h-4 mr-2" />
@@ -291,8 +292,10 @@ export default function CustomerDashboard() {
           </p>
         </motion.div>
 
+        <MissionExplanation />
+
         {/* Compact High-Priority Stats Row */}
-        <motion.div
+        {/* <motion.div
           initial="hidden"
           animate="show"
           variants={fadeUp}
@@ -320,10 +323,10 @@ export default function CustomerDashboard() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* My Shops Section - Top 4 Shops You've Visited */}
-        <motion.div
+        {/* <motion.div
           initial="hidden"
           animate="show"
           variants={fadeUp}
@@ -400,7 +403,7 @@ export default function CustomerDashboard() {
               </CardContent>
             </Card>
           )}
-        </motion.div>
+        </motion.div> */}
 
         {/* Top Missions Section */}
         <motion.div
@@ -513,9 +516,8 @@ export default function CustomerDashboard() {
           className="mb-6"
         >
           <div className="grid gap-6">
-            {/* Discover New Shops */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              {/* <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-green-500" />
                 Discover New Shops
               </h2>
@@ -538,7 +540,7 @@ export default function CustomerDashboard() {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
-              </Card>
+              </Card> */}
 
               <div className="mt-4">
                 <h3 className="font-semibold text-gray-800 mb-3 text-sm">Quick Actions</h3>

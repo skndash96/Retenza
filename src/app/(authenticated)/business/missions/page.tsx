@@ -403,9 +403,9 @@ export default function BusinessMissionsPage() {
                 {editingMission ? 'Edit Mission' : 'New Mission'}
               </h2>
               <div className="flex flex-col gap-3">
-                <Input placeholder="Title" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
-                <Input placeholder="Description" value={newDescription} onChange={e => setNewDescription(e.target.value)} />
-                <Input placeholder="Offer (e.g., 10% cashback, Free coffee, etc.)" value={newOffer} onChange={e => setNewOffer(e.target.value)} />
+                <Input placeholder="Title" value={newTitle || ""} onChange={e => setNewTitle(e.target.value)} />
+                <Input placeholder="Description" value={newDescription || ""} onChange={e => setNewDescription(e.target.value)} />
+                <Input placeholder="Offer (e.g., 10% cashback, Free coffee, etc.)" value={newOffer || ""} onChange={e => setNewOffer(e.target.value)} />
 
                 <div className="border p-3 rounded">
                   <label className="font-medium">Applicable Tiers:</label>

@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from 'zod';
 import { adminAuth } from "@/lib/firebase/admin";
+import { createSession } from "@/lib/session";
 
 const SESSION_COOKIE_NAME = "session_id";
 
@@ -43,42 +44,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "A customer with this phone number already exists." }, { status: 409 });
     }
 
-    const { sessionId, expiresAt } = await db.transaction(async (tx) => {
-      const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      const [insertedCustomer] = await tx
-        .insert(customers)
-        .values({
-          phone_number: phoneNumber, 
-          hashed_password: hashedPassword,
-          is_setup_complete: false, 
-        })
-        .returning({ id: customers.id });
+    const [insertedCustomer] = await db
+      .insert(customers)
+      .values({
+        phone_number: phoneNumber,
+        hashed_password: hashedPassword,
+        is_setup_complete: false,
+      })
+      .returning({ id: customers.id });
 
-      if (!insertedCustomer?.id) {
-        throw new Error("Failed to create customer record.");
-      }
-      
-      const newSessionId = randomUUID();
-      const newExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
+    if (!insertedCustomer?.id) {
+      throw new Error("Failed to create customer record.");
+    }
 
-      await tx.insert(sessions).values({
-        id: newSessionId,
-        userId: insertedCustomer.id,
-        role: "user", 
-        expiresAt: newExpiresAt,
-      });
-
-      return { sessionId: newSessionId, expiresAt: newExpiresAt };
-    });
-    
-    cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: "/",
-      expires: expiresAt,
-      sameSite: 'lax',
-    });
+    await createSession(insertedCustomer.id, "user");
 
     return NextResponse.json({ success: true }, { status: 201 });
 
@@ -90,7 +71,7 @@ export async function POST(req: Request) {
     console.error("Customer registration failed:", error);
 
     return NextResponse.json(
-      { 
+      {
         error: "Customer registration failed.",
         details: error instanceof Error ? error.message : "An unexpected error occurred.",
       },
