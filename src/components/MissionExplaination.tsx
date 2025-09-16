@@ -12,7 +12,7 @@ export default function MissionExplanation() {
     {
       icon: Target,
       title: "Mission",
-      description: "Show your purpose"
+      description: "Show your mission dashboard"
     },
     {
       icon: Gift,
