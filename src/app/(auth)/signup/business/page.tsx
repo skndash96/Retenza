@@ -68,7 +68,33 @@ export default function BusinessSignupPage() {
   const handleInfoSubmit = async (data: BusinessInfoData) => {
     setInfoLoading(true);
     setError(null);
+
     try {
+      // Validate password fields before sending OTP
+      if (!data.password || !data.confirmPassword) {
+        const errorMessage = 'Please fill in both password fields.';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setInfoLoading(false);
+        return;
+      }
+
+      if (data.password.length < 8) {
+        const errorMessage = 'Password must be at least 8 characters long.';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setInfoLoading(false);
+        return;
+      }
+
+      if (data.password !== data.confirmPassword) {
+        const errorMessage = 'Passwords do not match. Please check and try again.';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setInfoLoading(false);
+        return;
+      }
+
       const parsedPhoneNumber = parsePhoneNumberFromString(data.phone_number, 'IN');
       if (!parsedPhoneNumber?.isValid()) {
         const errorMessage = 'Invalid phone number. Please enter a valid Indian number.';

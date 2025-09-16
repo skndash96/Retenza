@@ -17,8 +17,7 @@ source .env
 
 DB_PASSWORD=$(echo "$DATABASE_URL" | awk -F':' '{print $3}' | awk -F'@' '{print $1}')
 DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'/' '{print $1}')
-DB_NAME=$(echo "$DATABASE_URL" | awk -F'
-/' '{print $4}' | awk -F'?' '{print $1}')
+DB_NAME=$(echo "$DATABASE_URL" | awk -F'/' '{print $4}' | awk -F'?' '{print $1}')
 DB_CONTAINER_NAME="$DB_NAME-postgres"
 
 if ! [ -x "$(command -v docker)" ] && ! [ -x "$(command -v podman)" ]; then
@@ -52,12 +51,12 @@ else
   fi
 fi
 
-if [ "$($DOCKER_CMD ps -q -f name=$DB_CONTAINER_NAME)" ]; then
+if [ "$($DOCKER_CMD ps -q -f name="$DB_CONTAINER_NAME")" ]; then
   echo "Database container '$DB_CONTAINER_NAME' already running"
   exit 0
 fi
 
-if [ "$($DOCKER_CMD ps -q -a -f name=$DB_CONTAINER_NAME)" ]; then
+if [ "$($DOCKER_CMD ps -q -a -f name="$DB_CONTAINER_NAME")" ]; then
   $DOCKER_CMD start "$DB_CONTAINER_NAME"
   echo "Existing database container '$DB_CONTAINER_NAME' started"
   exit 0
@@ -76,7 +75,7 @@ if [ "$DB_PASSWORD" = "password" ]; then
 fi
 
 $DOCKER_CMD run -d \
-  --name $DB_CONTAINER_NAME \
+  --name "$DB_CONTAINER_NAME" \
   -e POSTGRES_USER="postgres" \
   -e POSTGRES_PASSWORD="$DB_PASSWORD" \
   -e POSTGRES_DB="$DB_NAME" \
