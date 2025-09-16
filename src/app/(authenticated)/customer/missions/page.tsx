@@ -314,7 +314,7 @@ export default function CustomerMissionsPage() {
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
             <Gift className="w-4 h-4 text-green-600" />
-            <Badge className="bg-green-100 text-green-800 text-xs font-medium">
+            <Badge className="bg-green-100 text-green-800 text-xs font-medium text-wrap">
               {mission.offer}
             </Badge>
           </div>
