@@ -165,8 +165,8 @@ export default function CustomerSignup() {
         toast.error(errorData.error ?? errorData.details ?? 'An unknown error occurred. Please try again.');
         setServerError(errorData.error ?? errorData.details ?? 'An unknown error occurred.');
       } else {
-        toast.success('Signup successful! Redirecting to login...');
-        router.push('/login/customer');
+        toast.success('Signup successful!');
+        router.push('/customer');
       }
     } catch {
       toast.error('Invalid OTP or an unexpected error occurred.');

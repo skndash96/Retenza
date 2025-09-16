@@ -292,7 +292,7 @@ export default function CustomerDashboard() {
         </motion.div>
 
         {/* Compact High-Priority Stats Row */}
-        <motion.div
+        {/* <motion.div
           initial="hidden"
           animate="show"
           variants={fadeUp}
@@ -320,10 +320,10 @@ export default function CustomerDashboard() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* My Shops Section - Top 4 Shops You've Visited */}
-        <motion.div
+        {/* <motion.div
           initial="hidden"
           animate="show"
           variants={fadeUp}
@@ -400,7 +400,7 @@ export default function CustomerDashboard() {
               </CardContent>
             </Card>
           )}
-        </motion.div>
+        </motion.div> */}
 
         {/* Top Missions Section */}
         <motion.div
@@ -513,9 +513,8 @@ export default function CustomerDashboard() {
           className="mb-6"
         >
           <div className="grid gap-6">
-            {/* Discover New Shops */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              {/* <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-green-500" />
                 Discover New Shops
               </h2>
@@ -538,7 +537,7 @@ export default function CustomerDashboard() {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
-              </Card>
+              </Card> */}
 
               <div className="mt-4">
                 <h3 className="font-semibold text-gray-800 mb-3 text-sm">Quick Actions</h3>
