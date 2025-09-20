@@ -8,12 +8,12 @@ import { createSession } from "@/lib/session";
 export async function POST(req: Request) {
   const { phone, password } = await req.json() as { phone: string; password: string };
 
-  const [user] = await db.select().from(customers).where(eq(customers.phone_number, phone));
+  const [user] = await db.select().from(customers).where(eq(customers.phoneNumber, phone));
   if (!user) {
     return new NextResponse("Invalid credentials", { status: 401 });
   }
 
-  const valid = await bcrypt.compare(password, user.hashed_password);
+  const valid = await bcrypt.compare(password, user.hashedPassword);
   if (!valid) return new NextResponse("Invalid credentials", { status: 401 });
 
   await createSession(user.id, "user"); 

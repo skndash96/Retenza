@@ -6,21 +6,22 @@ import type { ReactNode } from 'react';
 
 interface CustomerSession {
   id: number;
-  phone_number: string;
+  phoneNumber: string;
   name?: string | null;
   gender?: string | null;
   dob?: number | null; 
   anniversary?: number | null; 
-  is_setup_complete: boolean;
+  isSetupComplete: boolean;
 }
 
 interface BusinessSession {
   id: number;
-  phone_number: string;
+  phoneNumber: string;
   name: string;
   address?: string | null;
-  business_type?: string | null;
-  contact_number_2?: string | null;
+  businessType?: string | null;
+  contactNumber?: string | null;
+  contactNumber2?: string | null;
 }
 
 type UserSession = CustomerSession | BusinessSession | null;

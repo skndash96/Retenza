@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { User, Phone, Lock, Shield, CheckCircle } from 'lucide-react';
 
 const phoneNumberSchema = z.string().regex(/^(\+?\d{1,3})?[-.\s]?(\(?\d{1,4}\)?)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, "Invalid phone number format.");
+
 const customerSignupSchema = z.object({
   phone_number: phoneNumberSchema,
   password: z.string().min(8, 'Password must be at least 8 characters.'),

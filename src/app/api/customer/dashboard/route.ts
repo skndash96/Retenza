@@ -16,15 +16,15 @@ export async function GET(_req: NextRequest) {
       .select({
         shopId: businesses.id,
         shopName: businesses.name,
-        shopType: businesses.business_type,
+        shopType: businesses.businessType,
         loyaltyPoints: customerLoyalty.points,
-        currentTier: customerLoyalty.current_tier_name,
-        logoUrl: businesses.logo_url,
-        gmapLink: businesses.gmap_link,
+        currentTier: customerLoyalty.currentTierName,
+        logoUrl: businesses.logoUrl,
+        gmapLink: businesses.gmapLink,
       })
       .from(customerLoyalty)
-      .innerJoin(businesses, eq(customerLoyalty.business_id, businesses.id))
-      .where(eq(customerLoyalty.customer_id, sessionUser.id));
+      .innerJoin(businesses, eq(customerLoyalty.businessId, businesses.id))
+      .where(eq(customerLoyalty.customerId, sessionUser.id));
 
     return NextResponse.json({ shops: customerShops });
   } catch (error) {

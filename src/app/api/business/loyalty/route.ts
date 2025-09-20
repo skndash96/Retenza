@@ -30,12 +30,12 @@ async function recalcCustomerTier(businessId: number, customerId: number, tiers:
   const [cl] = await db
     .select()
     .from(customerLoyalty)
-    .where(and(eq(customerLoyalty.customer_id, customerId), eq(customerLoyalty.business_id, businessId)))
+    .where(and(eq(customerLoyalty.customerId, customerId), eq(customerLoyalty.businessId, businessId)))
     .limit(1);
   if (!cl) return;
 
   // Find the highest tier the customer qualifies for
-  let newTier = tiers[0]?.name || cl.current_tier_name; // Default to first tier
+  let newTier = tiers[0]?.name || cl.currentTierName; // Default to first tier
   for (let i = tiers.length - 1; i >= 0; i--) {
     if (cl.points >= tiers[i].points_to_unlock) {
       newTier = tiers[i].name;
@@ -45,14 +45,14 @@ async function recalcCustomerTier(businessId: number, customerId: number, tiers:
 
   await db
     .update(customerLoyalty)
-    .set({ current_tier_name: newTier })
-    .where(and(eq(customerLoyalty.customer_id, customerId), eq(customerLoyalty.business_id, businessId)));
+    .set({ currentTierName: newTier })
+    .where(and(eq(customerLoyalty.customerId, customerId), eq(customerLoyalty.businessId, businessId)));
 }
 
 async function updateAllCustomerTiers(businessId: number, tiers: Array<{ points_to_unlock: number; name: string }>) {
-  const customers = await db.select().from(customerLoyalty).where(eq(customerLoyalty.business_id, businessId));
+  const customers = await db.select().from(customerLoyalty).where(eq(customerLoyalty.businessId, businessId));
   for (const c of customers) {
-    await recalcCustomerTier(businessId, c.customer_id, tiers);
+    await recalcCustomerTier(businessId, c.customerId, tiers);
   }
 }
 
@@ -64,7 +64,7 @@ export async function GET() {
     const programs = await db
       .select()
       .from(loyaltyPrograms)
-      .where(eq(loyaltyPrograms.business_id, business.id));
+      .where(eq(loyaltyPrograms.businessId, business.id));
     return NextResponse.json(programs);
   } catch (error) {
     console.error("Error fetching loyalty programs:", error);
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     const existingPrograms = await db.select()
       .from(loyaltyPrograms)
-      .where(eq(loyaltyPrograms.business_id, business.id));
+      .where(eq(loyaltyPrograms.businessId, business.id));
 
     function rewardsMatch(r1: Tier['rewards'], r2: Tier['rewards']) {
       if (r1.length !== r2.length) return false;
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
 
       const updated = await db.update(loyaltyPrograms).set({
         tiers: updatedTiers,
-      }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
+      }).where(eq(loyaltyPrograms.businessId, business.id)).returning();
 
       // Update all customer tiers after modifying the loyalty program
       await updateAllCustomerTiers(business.id, updatedTiers.map(tier => ({ points_to_unlock: tier.points_to_unlock, name: tier.name })));
@@ -149,8 +149,8 @@ export async function POST(req: NextRequest) {
       }
 
       const inserted = await db.insert(loyaltyPrograms).values({
-        business_id: business.id,
-        points_rate: body.points_rate,
+        businessId: business.id,
+        pointsRate: body.points_rate,
         tiers: [transformedTier],
       }).returning();
 
@@ -176,7 +176,7 @@ export async function PUT(req: NextRequest) {
 
     const existingPrograms = await db.select()
       .from(loyaltyPrograms)
-      .where(eq(loyaltyPrograms.business_id, business.id));
+      .where(eq(loyaltyPrograms.businessId, business.id));
 
     if (existingPrograms.length === 0) {
       return NextResponse.json({ error: "No loyalty program found" }, { status: 404 });
@@ -188,7 +188,7 @@ export async function PUT(req: NextRequest) {
     // Update the program with new tiers
     const updated = await db.update(loyaltyPrograms).set({
       tiers: tiersWithIds
-    }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
+    }).where(eq(loyaltyPrograms.businessId, business.id)).returning();
 
     // Recalculate customer tiers based on new tier structure
     await updateAllCustomerTiers(business.id, body.tiers);
@@ -214,7 +214,7 @@ export async function DELETE(req: NextRequest) {
 
     const existingPrograms = await db.select()
       .from(loyaltyPrograms)
-      .where(eq(loyaltyPrograms.business_id, business.id));
+      .where(eq(loyaltyPrograms.businessId, business.id));
 
     if (existingPrograms.length === 0) {
       return NextResponse.json({ error: "No loyalty program found" }, { status: 404 });
@@ -258,7 +258,7 @@ export async function DELETE(req: NextRequest) {
       if (rewards.length === 0) tiers.splice(tierIndex, 1);
       else tiers[tierIndex].rewards = rewards;
 
-      const updated = await db.update(loyaltyPrograms).set({ tiers }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
+      const updated = await db.update(loyaltyPrograms).set({ tiers }).where(eq(loyaltyPrograms.businessId, business.id)).returning();
 
       await updateAllCustomerTiers(business.id, tiers.map(tier => ({ points_to_unlock: tier.points_to_unlock, name: tier.name })));
 
@@ -271,7 +271,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     tiers.splice(tierIndex, 1);
-    const updated = await db.update(loyaltyPrograms).set({ tiers }).where(eq(loyaltyPrograms.business_id, business.id)).returning();
+    const updated = await db.update(loyaltyPrograms).set({ tiers }).where(eq(loyaltyPrograms.businessId, business.id)).returning();
 
     await updateAllCustomerTiers(business.id, tiers.map(tier => ({ points_to_unlock: tier.points_to_unlock, name: tier.name })));
 

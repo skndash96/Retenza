@@ -9,12 +9,12 @@ async function recalcCustomerTier(businessId: number, customerId: number, tiers:
     const [cl] = await db
         .select()
         .from(customerLoyalty)
-        .where(and(eq(customerLoyalty.customer_id, customerId), eq(customerLoyalty.business_id, businessId)))
+        .where(and(eq(customerLoyalty.customerId, customerId), eq(customerLoyalty.businessId, businessId)))
         .limit(1);
     if (!cl) return;
 
     // Find the highest tier the customer qualifies for
-    let newTier = tiers[0]?.name || cl.current_tier_name; // Default to first tier
+    let newTier = tiers[0]?.name || cl.currentTierName; // Default to first tier
     for (let i = tiers.length - 1; i >= 0; i--) {
         if (cl.points >= tiers[i].points_to_unlock) {
             newTier = tiers[i].name;
@@ -24,14 +24,14 @@ async function recalcCustomerTier(businessId: number, customerId: number, tiers:
 
     await db
         .update(customerLoyalty)
-        .set({ current_tier_name: newTier })
-        .where(and(eq(customerLoyalty.customer_id, customerId), eq(customerLoyalty.business_id, businessId)));
+        .set({ currentTierName: newTier })
+        .where(and(eq(customerLoyalty.customerId, customerId), eq(customerLoyalty.businessId, businessId)));
 }
 
 async function updateAllCustomerTiers(businessId: number, tiers: Array<{ points_to_unlock: number; name: string }>) {
-    const customers = await db.select().from(customerLoyalty).where(eq(customerLoyalty.business_id, businessId));
+    const customers = await db.select().from(customerLoyalty).where(eq(customerLoyalty.businessId, businessId));
     for (const c of customers) {
-        await recalcCustomerTier(businessId, c.customer_id, tiers);
+        await recalcCustomerTier(businessId, c.customerId, tiers);
     }
 }
 
@@ -44,7 +44,7 @@ export async function POST() {
         const [program] = await db
             .select()
             .from(loyaltyPrograms)
-            .where(eq(loyaltyPrograms.business_id, business.id))
+            .where(eq(loyaltyPrograms.businessId, business.id))
             .limit(1);
 
         if (!program) {

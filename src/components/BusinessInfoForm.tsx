@@ -10,11 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Upload, X } from 'lucide-react';
-
-const INDUSTRY_OPTIONS = [
-    "Retail", "Restaurant", "Healthcare", "Education", "Beauty",
-    "Electronics", "Fitness", "Automotive", "Other",
-];
+import { INDUSTRY_OPTIONS } from '@/server/constants/industry';
 
 export function BusinessInfoForm({
     onSubmit,

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            logo_url: result.url,
+            logoUrl: result.url,
             filename: result.filename,
             size: result.size,
         });

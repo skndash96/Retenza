@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
             subscriptions = await db
                 .select()
                 .from(pushSubscriptions)
-                .where(and(eq(pushSubscriptions.customer_id, customerId), eq(pushSubscriptions.business_id, businessId)));
+                .where(and(eq(pushSubscriptions.customerId, customerId), eq(pushSubscriptions.businessId, businessId)));
         } else if (businessId) {
             // All subscriptions for a business
             subscriptions = await db
                 .select()
                 .from(pushSubscriptions)
-                .where(eq(pushSubscriptions.business_id, businessId));
+                .where(eq(pushSubscriptions.businessId, businessId));
         } else {
             // All subscriptions
             subscriptions = await db.select().from(pushSubscriptions);
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
                 try {
                     console.log(`Sending to subscription ${index + 1}:`, {
                         id: subscription.id,
-                        customer_id: subscription.customer_id,
-                        business_id: subscription.business_id,
+                        customer_id: subscription.customerId,
+                        business_id: subscription.businessId,
                         endpoint: subscription.endpoint.substring(0, 50) + '...'
                     });
 
@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
                         success: true,
                         subscriptionId: subscription.id,
                         statusCode: result.statusCode,
-                        customerId: subscription.customer_id,
-                        businessId: subscription.business_id
+                        customerId: subscription.customerId,
+                        businessId: subscription.businessId
                     };
                 } catch (error) {
                     console.error(`Failed for subscription ${index + 1}:`, error);
@@ -102,8 +102,8 @@ export async function POST(request: NextRequest) {
                         success: false,
                         subscriptionId: subscription.id,
                         error: error instanceof Error ? error.message : 'Unknown error',
-                        customerId: subscription.customer_id,
-                        businessId: subscription.business_id
+                        customerId: subscription.customerId,
+                        businessId: subscription.businessId
                     };
                 }
             })

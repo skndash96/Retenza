@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         // Find customer by phone number
         const customer = await db.select()
             .from(customers)
-            .where(eq(customers.phone_number, phone))
+            .where(eq(customers.phoneNumber, phone))
             .limit(1);
 
         if (customer.length === 0) {
@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
         let customerLoyaltyData = await db.select()
             .from(customerLoyalty)
             .where(and(
-                eq(customerLoyalty.customer_id, customerData.id),
-                eq(customerLoyalty.business_id, business.id)
+                eq(customerLoyalty.customerId, customerData.id),
+                eq(customerLoyalty.businessId, business.id)
             ))
             .limit(1);
 
@@ -45,18 +45,18 @@ export async function GET(req: NextRequest) {
         let isNewlyEnrolled = false;
         if (customerLoyaltyData.length === 0) {
             await db.insert(customerLoyalty).values({
-                customer_id: customerData.id,
-                business_id: business.id,
+                customerId: customerData.id,
+                businessId: business.id,
                 points: 0,
-                current_tier_name: 'Bronze' // Default tier
+                currentTierName: 'Bronze' // Default tier
             });
 
             // Fetch the newly created loyalty data
             customerLoyaltyData = await db.select()
                 .from(customerLoyalty)
                 .where(and(
-                    eq(customerLoyalty.customer_id, customerData.id),
-                    eq(customerLoyalty.business_id, business.id)
+                    eq(customerLoyalty.customerId, customerData.id),
+                    eq(customerLoyalty.businessId, business.id)
                 ))
                 .limit(1);
 
@@ -66,15 +66,15 @@ export async function GET(req: NextRequest) {
             // Check if customer has any existing push subscriptions (global permission)
             const globalSubscriptions = await db.select()
                 .from(pushSubscriptions)
-                .where(eq(pushSubscriptions.customer_id, customerData.id))
+                .where(eq(pushSubscriptions.customerId, customerData.id))
                 .limit(1);
 
             if (globalSubscriptions.length > 0) {
                 // Customer has given notification permission, auto-subscribe to this business
                 const globalSub = globalSubscriptions[0];
                 await db.insert(pushSubscriptions).values({
-                    customer_id: customerData.id,
-                    business_id: business.id,
+                    customerId: customerData.id,
+                    businessId: business.id,
                     endpoint: globalSub.endpoint,
                     p256dh: globalSub.p256dh,
                     auth: globalSub.auth,
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
         // Get business loyalty program
         const businessLoyalty = await db.select()
             .from(loyaltyPrograms)
-            .where(eq(loyaltyPrograms.business_id, business.id))
+            .where(eq(loyaltyPrograms.businessId, business.id))
             .limit(1);
 
         if (businessLoyalty.length === 0) {
@@ -119,8 +119,8 @@ export async function GET(req: NextRequest) {
         const redemptionHistory = await db.select()
             .from(rewardRedemptions)
             .where(and(
-                eq(rewardRedemptions.customer_id, customerData.id),
-                eq(rewardRedemptions.business_id, business.id)
+                eq(rewardRedemptions.customerId, customerData.id),
+                eq(rewardRedemptions.businessId, business.id)
             ));
 
         // Calculate monthly redemption counts for limited usage rewards
@@ -130,9 +130,9 @@ export async function GET(req: NextRequest) {
 
         currentTier.rewards.forEach((reward) => {
             if (reward.reward_type === 'limited_usage') {
-                const monthlyCount = redemptionHistory.filter((redemption: { reward_id: string; redeemed_at: Date }) => {
-                    const redemptionDate = new Date(redemption.redeemed_at);
-                    return parseInt(redemption.reward_id) === reward.id &&
+                const monthlyCount = redemptionHistory.filter(redemption => {
+                    const redemptionDate = new Date(redemption.redeemedAt);
+                    return parseInt(redemption.rewardId) === reward.id &&
                         redemptionDate.getMonth() === currentMonth &&
                         redemptionDate.getFullYear() === currentYear;
                 }).length;
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
         // Update rewards with redemption counts
         const rewardsWithCounts = currentTier.rewards.map((reward) => {
             const redemptionCount = redemptionHistory.filter(
-                (redemption: { reward_id: string }) => parseInt(redemption.reward_id) === reward.id
+                (redemption) => parseInt(redemption.rewardId) === reward.id
             ).length;
 
             return {
@@ -154,14 +154,14 @@ export async function GET(req: NextRequest) {
 
         const enrichedCustomer = {
             id: customerData.id,
-            phone_number: customerData.phone_number,
+            phoneNumber: customerData.phoneNumber,
             name: customerData.name,
-            current_tier_name: currentTier.name,
+            currentTierName: currentTier.name,
             points: loyaltyData.points,
-            redeemable_points: loyaltyData.redeemable_points || 0,
-            is_newly_enrolled: isNewlyEnrolled,
-            monthly_redemptions: monthlyRedemptions,
-            current_tier: {
+            redeemablePoints: loyaltyData.redeemablePoints || 0,
+            isNewlyEnrolled,
+            monthlyRedemptions,
+            currenttier: {
                 ...currentTier,
                 rewards: rewardsWithCounts
             }

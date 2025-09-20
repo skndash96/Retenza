@@ -4,38 +4,38 @@ import { eq, and, desc } from 'drizzle-orm';
 import type { NotificationData } from '../pushNotifications';
 
 interface PushSubscription {
-    customer_id: number;
-    business_id: number;
+    customerId: number;
+    businessId: number;
     endpoint: string;
     p256dh: string;
     auth: string;
-    updated_at?: Date;
+    updatedAt?: Date;
 }
 
 interface NotificationRow {
     id: number;
-    customer_id: number;
-    business_id: number;
+    customerId: number;
+    businessId: number;
     type: string;
     title: string;
     body: string;
     data: unknown;
-    is_read: boolean | null;
-    sent_at: Date;
-    read_at: Date | null;
+    isRead: boolean | null;
+    sentAt: Date;
+    readAt: Date | null;
 }
 
 export interface CustomerNotification {
     id: number;
-    customer_id: number;
-    business_id: number;
+    customerId: number;
+    businessId: number;
     type: string;
     title: string;
     body: string;
     data: Record<string, unknown>;
-    is_read: boolean;
-    sent_at: Date;
-    read_at: Date | null;
+    isRead: boolean;
+    sentAt: Date;
+    readAt: Date | null;
 }
 
 export class ServerPushNotificationService {
@@ -65,8 +65,8 @@ export class ServerPushNotificationService {
                 .from(pushSubscriptions)
                 .where(
                     and(
-                        eq(pushSubscriptions.customer_id, customerId),
-                        eq(pushSubscriptions.business_id, businessId)
+                        eq(pushSubscriptions.customerId, customerId),
+                        eq(pushSubscriptions.businessId, businessId)
                     )
                 );
 
@@ -78,19 +78,19 @@ export class ServerPushNotificationService {
                         endpoint: subscription.endpoint,
                         p256dh: subscription.p256dh,
                         auth: subscription.auth,
-                        updated_at: new Date(),
+                        updatedAt: new Date(),
                     })
                     .where(
                         and(
-                            eq(pushSubscriptions.customer_id, customerId),
-                            eq(pushSubscriptions.business_id, businessId)
+                            eq(pushSubscriptions.customerId, customerId),
+                            eq(pushSubscriptions.businessId, businessId)
                         )
                     );
             } else {
                 // Create new subscription
                 await db.insert(pushSubscriptions).values({
-                    customer_id: customerId,
-                    business_id: businessId,
+                    customerId: customerId,
+                    businessId: businessId,
                     endpoint: subscription.endpoint,
                     p256dh: subscription.p256dh,
                     auth: subscription.auth,
@@ -112,8 +112,8 @@ export class ServerPushNotificationService {
                 .delete(pushSubscriptions)
                 .where(
                     and(
-                        eq(pushSubscriptions.customer_id, customerId),
-                        eq(pushSubscriptions.business_id, businessId)
+                        eq(pushSubscriptions.customerId, customerId),
+                        eq(pushSubscriptions.businessId, businessId)
                     )
                 );
         } catch (error) {
@@ -135,8 +135,8 @@ export class ServerPushNotificationService {
                 .from(pushSubscriptions)
                 .where(
                     and(
-                        eq(pushSubscriptions.customer_id, customerId),
-                        eq(pushSubscriptions.business_id, businessId)
+                        eq(pushSubscriptions.customerId, customerId),
+                        eq(pushSubscriptions.businessId, businessId)
                     )
                 );
 
@@ -148,8 +148,8 @@ export class ServerPushNotificationService {
             // Store notification in database
             const notifType = this.getNotificationType(notification.data);
             await db.insert(notifications).values({
-                customer_id: customerId,
-                business_id: businessId,
+                customerId: customerId,
+                businessId: businessId,
                 type: notifType,
                 title: notification.title,
                 body: notification.body,
@@ -173,15 +173,15 @@ export class ServerPushNotificationService {
             const subscriptions = await db
                 .select()
                 .from(pushSubscriptions)
-                .where(eq(pushSubscriptions.business_id, businessId));
+                .where(eq(pushSubscriptions.businessId, businessId));
 
             const promises = subscriptions.map(async (subscription) => {
                 try {
                     // Store notification in database
                     const notifType = this.getNotificationType(notification.data);
                     await db.insert(notifications).values({
-                        customer_id: subscription.customer_id,
-                        business_id: businessId,
+                        customerId: subscription.customerId,
+                        businessId: businessId,
                         type: notifType,
                         title: notification.title,
                         body: notification.body,
@@ -191,7 +191,7 @@ export class ServerPushNotificationService {
                     // Send push notification
                     await this.sendPushNotification(subscription, notification);
                 } catch (error) {
-                    console.error(`Error sending notification to customer ${subscription.customer_id}:`, error);
+                    console.error(`Error sending notification to customer ${subscription.customerId}:`, error);
                 }
             });
 
@@ -291,18 +291,18 @@ export class ServerPushNotificationService {
                 .from(notifications)
                 .where(
                     and(
-                        eq(notifications.customer_id, customerId),
-                        eq(notifications.business_id, businessId)
+                        eq(notifications.customerId, customerId),
+                        eq(notifications.businessId, businessId)
                     )
                 )
-                .orderBy(desc(notifications.sent_at))
+                .orderBy(desc(notifications.sentAt))
                 .limit(limit);
 
             // Transform and validate the data
             return rows.map((row: NotificationRow): CustomerNotification => ({
                 ...row,
                 data: this.parseNotificationData(row.data),
-                is_read: Boolean(row.is_read),
+                isRead: Boolean(row.isRead),
             }));
         } catch (error) {
             console.error('Error fetching customer notifications:', error);
@@ -324,8 +324,8 @@ export class ServerPushNotificationService {
             await db
                 .update(notifications)
                 .set({
-                    is_read: true,
-                    read_at: new Date(),
+                    isRead: true,
+                    readAt: new Date(),
                 })
                 .where(eq(notifications.id, notificationId));
         } catch (error) {

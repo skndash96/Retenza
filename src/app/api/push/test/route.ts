@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         const subscriptions = await db
             .select()
             .from(pushSubscriptions)
-            .where(eq(pushSubscriptions.business_id, businessId));
+            .where(eq(pushSubscriptions.businessId, businessId));
 
         if (subscriptions.length === 0) {
             return NextResponse.json(
@@ -67,12 +67,12 @@ export async function POST(request: NextRequest) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
 
-                    return { success: true, customerId: subscription.customer_id };
+                    return { success: true, customerId: subscription.customerId };
                 } catch (error) {
-                    console.error(`Failed to send to customer ${subscription.customer_id}:`, error);
+                    console.error(`Failed to send to customer ${subscription.customerId}:`, error);
                     return {
                         success: false,
-                        customerId: subscription.customer_id,
+                        customerId: subscription.customerId,
                         error: error instanceof Error ? error.message : 'Unknown error'
                     };
                 }

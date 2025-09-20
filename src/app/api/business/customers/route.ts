@@ -14,36 +14,36 @@ export async function GET(_req: NextRequest) {
     .select({
       c: customers,
       cl: customerLoyalty,
-      last_txn_at: sql`MAX(${transactions.created_at})`,
+      last_txn_at: sql`MAX(${transactions.createdAt})`,
     })
     .from(customers)
     .innerJoin(
       customerLoyalty,
-      and(eq(customerLoyalty.customer_id, customers.id), eq(customerLoyalty.business_id, businessId))
+      and(eq(customerLoyalty.customerId, customers.id), eq(customerLoyalty.businessId, businessId))
     )
-    .leftJoin(transactions, eq(transactions.customer_id, customers.id))
+    .leftJoin(transactions, eq(transactions.customerId, customers.id))
     .groupBy(
       customers.id,
-      customerLoyalty.customer_id,
+      customerLoyalty.customerId,
       customerLoyalty.points,
-      customerLoyalty.current_tier_name,
-      customerLoyalty.created_at,
-      customerLoyalty.business_id
+      customerLoyalty.currentTierName,
+      customerLoyalty.createdAt,
+      customerLoyalty.businessId
     )
-    .orderBy(desc(customerLoyalty.updated_at));
+    .orderBy(desc(customerLoyalty.updatedAt));
 
   const formatted = rows.map((row) => ({
     id: row.c.id,
-    phone_number: row.c.phone_number,
+    phone_number: row.c.phoneNumber,
     name: row.c.name,
     gender: row.c.gender,
     dob: row.c.dob,
     anniversary: row.c.anniversary,
-    is_setup_complete: row.c.is_setup_complete,
-    created_at: row.c.created_at,
-    updated_at: row.c.updated_at,
+    is_setup_complete: row.c.isSetupComplete,
+    created_at: row.c.createdAt,
+    updated_at: row.c.updatedAt,
     points: row.cl.points,
-    current_tier_name: row.cl.current_tier_name,
+    current_tier_name: row.cl.currentTierName,
     last_txn_at: row.last_txn_at,
   }));
 
@@ -69,9 +69,9 @@ export async function POST(req: NextRequest) {
     .from(customers)
     .innerJoin(
       customerLoyalty,
-      and(eq(customerLoyalty.customer_id, customers.id), eq(customerLoyalty.business_id, businessId))
+      and(eq(customerLoyalty.customerId, customers.id), eq(customerLoyalty.businessId, businessId))
     )
-    .where(eq(customers.phone_number, phoneNumber))
+    .where(eq(customers.phoneNumber, phoneNumber))
     .limit(1);
 
   if (existing.length) {
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       customer_id: c.id,
       customer: {
         id: c.id,
-        phone_number: c.phone_number,
+        phone_number: c.phoneNumber,
         name: c.name,
       },
     });
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
   const globalCustomer = await db
     .select()
     .from(customers)
-    .where(eq(customers.phone_number, phoneNumber))
+    .where(eq(customers.phoneNumber, phoneNumber))
     .limit(1);
 
   const customer = globalCustomer[0];
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
   const programArr = await db
     .select()
     .from(loyaltyPrograms)
-    .where(eq(loyaltyPrograms.business_id, businessId))
+    .where(eq(loyaltyPrograms.businessId, businessId))
     .limit(1);
 
   let program = programArr[0];
@@ -110,8 +110,8 @@ export async function POST(req: NextRequest) {
     const ins = await db
       .insert(loyaltyPrograms)
       .values({
-        business_id: businessId,
-        points_rate: 1,
+        businessId: businessId,
+        pointsRate: 1,
         tiers: [bronzeTier],
       })
       .returning();
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
       const upd = await db
         .update(loyaltyPrograms)
         .set({ tiers: [...program.tiers, bronzeTier] })
-        .where(eq(loyaltyPrograms.business_id, businessId))
+        .where(eq(loyaltyPrograms.businessId, businessId))
         .returning();
       program = upd[0];
     }
@@ -133,10 +133,10 @@ export async function POST(req: NextRequest) {
   const inserted = await db
     .insert(customerLoyalty)
     .values({
-      customer_id: customer.id,
-      business_id: businessId,
+      customerId: customer.id,
+      businessId: businessId,
       points: 0,
-      current_tier_name: "Bronze",
+      currentTierName: "Bronze",
     })
     .returning();
 
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
     customer_id: customer.id,
     customer: {
       id: customer.id,
-      phone_number: customer.phone_number,
+      phoneNumber: customer.phoneNumber,
       name: customer.name,
     },
     loyalty: inserted[0],

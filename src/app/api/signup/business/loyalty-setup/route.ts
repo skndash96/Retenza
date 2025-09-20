@@ -25,7 +25,7 @@ const customRewardSchema = z.object({
 });
 
 const loyaltyProgramSchema = z.object({
-  points_rate: z.number().int().positive('Points rate must be a positive integer.').min(1, 'Points rate must be at least 1.'),
+  pointsRate: z.number().int().positive('Points rate must be a positive integer.').min(1, 'Points rate must be at least 1.'),
   description: z.string().min(10, 'A loyalty program description is required.'),
   tiers: z.array(z.object({
     name: z.string().min(1, 'Tier name is required.'),
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const validatedData = loyaltyProgramSchema.parse(body);
-    const { points_rate, description, tiers } = validatedData;
+    const { pointsRate, description, tiers } = validatedData;
 
     const session = await db.query.sessions.findFirst({
       where: (s, { eq }) => eq(s.id, sessionId),
@@ -88,13 +88,13 @@ export async function POST(req: Request) {
       }));
 
       await tx.insert(loyaltyPrograms).values({
-        business_id: session.userId,
-        points_rate,
+        businessId: session.userId,
+        pointsRate,
         description,
         tiers: tiersWithIds,
       });
 
-      await tx.update(businesses).set({ is_setup_complete: true }).where(eq(businesses.id, session.userId));
+      await tx.update(businesses).set({ isSetupComplete: true }).where(eq(businesses.id, session.userId));
     });
 
     return NextResponse.json({ success: true, message: "Loyalty program setup complete." }, { status: 200 });

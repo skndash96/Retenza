@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
 
-        let whereClause: any = eq(missionRegistry.customer_id, customer.id);
+        let whereClause: any = eq(missionRegistry.customerId, customer.id);
 
         if (status) {
             whereClause = and(whereClause, eq(missionRegistry.status, status as 'in_progress' | 'completed' | 'failed'));
@@ -24,23 +24,23 @@ export async function GET(req: NextRequest) {
         const registries = await db
             .select({
                 id: missionRegistry.id,
-                mission_id: missionRegistry.mission_id,
+                mission_id: missionRegistry.missionId,
                 status: missionRegistry.status,
-                started_at: missionRegistry.started_at,
-                completed_at: missionRegistry.completed_at,
-                discount_amount: missionRegistry.discount_amount,
-                discount_percentage: missionRegistry.discount_percentage,
+                started_at: missionRegistry.startedAt,
+                completed_at: missionRegistry.completedAt,
+                discount_amount: missionRegistry.discountAmount,
+                discount_percentage: missionRegistry.discountPercentage,
                 notes: missionRegistry.notes,
                 mission_title: missions.title,
                 mission_description: missions.description,
                 mission_offer: missions.offer,
                 mission_filters: missions.filters,
-                mission_expiry: missions.expires_at,
+                mission_expiry: missions.expiresAt,
             })
             .from(missionRegistry)
-            .innerJoin(missions, eq(missionRegistry.mission_id, missions.id))
+            .innerJoin(missions, eq(missionRegistry.missionId, missions.id))
             .where(whereClause)
-            .orderBy(missionRegistry.started_at);
+            .orderBy(missionRegistry.startedAt);
 
         return NextResponse.json({ success: true, registries });
     } catch (error) {
@@ -57,10 +57,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await req.json() as { mission_id: number; business_id: number };
-        const { mission_id, business_id } = body;
+        const body = await req.json() as { missionId: number; businessId: number };
+        const { missionId, businessId } = body;
 
-        if (!mission_id || !business_id) {
+        if (!missionId || !businessId) {
             return NextResponse.json({ error: "Mission ID and business ID are required" }, { status: 400 });
         }
 
@@ -68,8 +68,8 @@ export async function POST(req: NextRequest) {
         const existingMission = await db.select()
             .from(missionRegistry)
             .where(and(
-                eq(missionRegistry.customer_id, customer.id),
-                eq(missionRegistry.mission_id, mission_id)
+                eq(missionRegistry.customerId, customer.id),
+                eq(missionRegistry.missionId, missionId)
             ))
             .limit(1);
 
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         // Get mission details
         const missionData = await db.select()
             .from(missions)
-            .where(eq(missions.id, mission_id))
+            .where(eq(missions.id, missionId))
             .limit(1);
 
         if (missionData.length === 0) {
@@ -91,32 +91,32 @@ export async function POST(req: NextRequest) {
 
         // Start the mission
         await db.insert(missionRegistry).values({
-            customer_id: customer.id,
-            mission_id,
-            business_id,
+            customerId: customer.id,
+            missionId,
+            businessId,
             status: 'in_progress',
-            started_at: new Date(),
+            startedAt: new Date(),
         });
 
         // Send notification about mission started
         await db.insert(notifications).values({
-            customer_id: customer.id,
-            business_id,
+            customerId: customer.id,
+            businessId,
             type: 'mission_started',
             title: 'Mission Started! 🚀',
             body: `You've started "${mission.title}" mission. ${mission.offer}`,
             data: {
-                mission_id,
-                mission_title: mission.title,
-                mission_offer: mission.offer,
-                started_at: new Date()
+                missionId,
+                missionTitle: mission.title,
+                missionOffer: mission.offer,
+                startedAt: new Date()
             }
         });
 
         return NextResponse.json({
             success: true,
             message: "Mission started successfully",
-            mission_id,
+            missionId,
             status: 'in_progress'
         });
     } catch (error) {
@@ -134,11 +134,11 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await req.json() as { mission_id: number; business_id: number };
+        const body = await req.json() as { missionId: number; businessId: number };
 
-        const { mission_id, business_id } = body;
+        const { missionId, businessId } = body;
 
-        if (!mission_id || !business_id) {
+        if (!missionId || !businessId) {
             return NextResponse.json({ error: "Mission ID, business ID are required" }, { status: 400 });
         }
 
@@ -146,8 +146,8 @@ export async function DELETE(req: NextRequest) {
         const existingRegistry = await db.select()
             .from(missionRegistry)
             .where(and(
-                eq(missionRegistry.customer_id, customer.id),
-                eq(missionRegistry.mission_id, mission_id),
+                eq(missionRegistry.customerId, customer.id),
+                eq(missionRegistry.missionId, missionId),
                 eq(missionRegistry.status, 'in_progress')
             ))
             .limit(1);
@@ -165,7 +165,7 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({
             success: true,
             message: `Mission deleted successfully`,
-            mission_id
+            missionId
         });
     } catch (error) {
         console.error("Error updating mission:", error);

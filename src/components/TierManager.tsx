@@ -7,14 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit3, Trash2, X, Save, ArrowUp, ArrowDown } from 'lucide-react';
-import { RewardManager, type Reward } from './RewardManager';
-
-export type Tier = {
-    id?: number; // Changed from string to number for consistency with database
-    name: string;
-    points_to_unlock: number;
-    rewards: Reward[];
-};
+import { RewardManager } from './RewardManager';
+import { Tier } from '@/server/db/schema';
 
 interface TierManagerProps {
     tier: Tier;
@@ -50,7 +44,7 @@ export function TierManager({
         setIsEditing(false);
     };
 
-    const handleRewardsChange = (rewards: Reward[]) => {
+    const handleRewardsChange = (rewards: Tier['rewards']) => {
         setEditData({ ...editData, rewards });
     };
 
@@ -247,7 +241,7 @@ export function TierManager({
 }
 
 // Helper functions
-function getRewardDisplayText(reward: Reward): string {
+function getRewardDisplayText(reward: Tier['rewards'][number]): string {
     if (reward.reward_type === 'cashback') {
         return `${reward.percentage}% cashback`;
     } else if (reward.reward_type === 'limited_usage') {

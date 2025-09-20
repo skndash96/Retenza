@@ -55,7 +55,7 @@ export async function PATCH(
             .update(businesses)
             .set({
                 approved: approved,
-                updated_at: new Date()
+                updatedAt: new Date()
             })
             .where(eq(businesses.id, parseInt(id)))
             .returning();

@@ -8,12 +8,12 @@ export async function GET(_req: NextRequest) {
       return NextResponse.json({
         user: {
           id: customer.id,
-          phone_number: customer.phone_number,
+          phoneNumber: customer.phoneNumber,
           name: customer.name,
           gender: customer.gender,
           dob: customer.dob ? customer.dob.getTime() : null,
           anniversary: customer.anniversary ? customer.anniversary.getTime() : null,
-          is_setup_complete: customer.is_setup_complete,
+          isSetupComplete: customer.isSetupComplete,
         },
         role: 'user',
       });
@@ -24,11 +24,12 @@ export async function GET(_req: NextRequest) {
       return NextResponse.json({
         user: {
           id: business.id,
-          phone_number: business.phone_number,
+          phoneNumber: business.phoneNumber,
           name: business.name,
           address: business.address,
-          business_type: business.business_type,
-          contact_number_2: business.contact_number_2,
+          businessType: business.businessType,
+          contactNumber: business.contactNumber,
+          contactNumber2: business.contactNumber2,
         },
         role: 'business',
       });

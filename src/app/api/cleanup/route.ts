@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     await db.transaction(async (tx) => {
       await tx.delete(sessions).where(lt(sessions.expiresAt, now));
-      await tx.delete(missions).where(lt(missions.expires_at, now));
+      await tx.delete(missions).where(lt(missions.expiresAt, now));
     });
 
     return NextResponse.json({

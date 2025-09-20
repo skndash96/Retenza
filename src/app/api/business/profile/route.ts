@@ -17,15 +17,15 @@ export async function GET() {
             .select({
                 id: businesses.id,
                 name: businesses.name,
-                business_type: businesses.business_type,
+                businessType: businesses.businessType,
                 description: businesses.description,
                 address: businesses.address,
-                contact_number: businesses.contact_number,
-                contact_number_2: businesses.contact_number_2,
+                contactNumber: businesses.contactNumber,
+                contactNumber2: businesses.contactNumber2,
                 email: businesses.email,
-                gmap_link: businesses.gmap_link,
-                logo_url: businesses.logo_url,
-                additional_info: businesses.additional_info,
+                gmapLink: businesses.gmapLink,
+                logoUrl: businesses.logoUrl,
+                additionalInfo: businesses.additionalInfo,
             })
             .from(businesses)
             .where(eq(businesses.id, business.id))
@@ -89,21 +89,21 @@ export async function PATCH(request: NextRequest) {
             .update(businesses)
             .set({
                 ...updateData,
-                updated_at: new Date(),
+                updatedAt: new Date(),
             })
             .where(eq(businesses.id, business.id))
             .returning({
                 id: businesses.id,
                 name: businesses.name,
-                business_type: businesses.business_type,
+                business_type: businesses.businessType,
                 description: businesses.description,
                 address: businesses.address,
-                contact_number: businesses.contact_number,
-                contact_number_2: businesses.contact_number_2,
+                contact_number: businesses.contactNumber,
+                contact_number_2: businesses.contactNumber2,
                 email: businesses.email,
-                gmap_link: businesses.gmap_link,
-                logo_url: businesses.logo_url,
-                additional_info: businesses.additional_info,
+                gmap_link: businesses.gmapLink,
+                logo_url: businesses.logoUrl,
+                additional_info: businesses.additionalInfo,
             });
 
         if (updatedBusiness.length === 0) {

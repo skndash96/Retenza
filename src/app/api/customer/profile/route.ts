@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
         gender,
         dob: dobDate,
         anniversary: anniversaryDate,
-        is_setup_complete: true,
-        updated_at: new Date(),
+        isSetupComplete: true,
+        updatedAt: new Date(),
       })
       .where(eq(customers.id, sessionUser.id));
 
@@ -35,12 +35,12 @@ export async function POST(req: NextRequest) {
         message: 'Profile updated successfully!',
         user: {
           id: updatedCustomer.id,
-          phone_number: updatedCustomer.phone_number,
+          phoneNumber: updatedCustomer.phoneNumber,
           name: updatedCustomer.name,
           gender: updatedCustomer.gender,
           dob: updatedCustomer.dob ? updatedCustomer.dob.getTime() : null,
           anniversary: updatedCustomer.anniversary ? updatedCustomer.anniversary.getTime() : null,
-          is_setup_complete: updatedCustomer.is_setup_complete,
+          isSetupComplete: updatedCustomer.isSetupComplete,
         },
       });
     } else {

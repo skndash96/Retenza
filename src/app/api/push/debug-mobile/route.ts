@@ -13,8 +13,8 @@ export async function GET() {
                 business: businesses,
             })
             .from(pushSubscriptions)
-            .innerJoin(customers, eq(pushSubscriptions.customer_id, customers.id))
-            .innerJoin(businesses, eq(pushSubscriptions.business_id, businesses.id));
+            .innerJoin(customers, eq(pushSubscriptions.customerId, customers.id))
+            .innerJoin(businesses, eq(pushSubscriptions.businessId, businesses.id));
 
         // Check VAPID configuration
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -54,7 +54,7 @@ export async function GET() {
                             p256dh: !!sub.subscription.p256dh,
                             auth: !!sub.subscription.auth,
                         },
-                        createdAt: sub.subscription.created_at,
+                        createdAt: sub.subscription.createdAt,
                     }))
                 },
                 testSubscription: testResult,

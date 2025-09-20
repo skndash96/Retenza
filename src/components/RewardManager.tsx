@@ -8,17 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit3, Trash2, Plus } from "lucide-react";
+import { Tier } from "@/server/db/schema";
 
-export type Reward = {
-  id?: number; // Changed from string to number for consistency with database
-  reward_type: "cashback" | "limited_usage" | "custom";
-  percentage?: number;
-  reward_text?: string;
-  usage_limit_per_month?: number;
-  one_time?: boolean;
-  name?: string;
-  reward?: string;
-};
+type Reward = Tier['rewards'][number];
+type RewardInsert = Omit<Reward, 'id'>;
 
 interface RewardManagerProps {
   rewards: Reward[];
@@ -32,7 +25,7 @@ export function RewardManager({
   onRewardsChange,
   disabled = false,
 }: RewardManagerProps) {
-  const [rewardInput, setRewardInput] = useState<Reward>({
+  const [rewardInput, setRewardInput] = useState<RewardInsert>({
     reward_type: "cashback",
     percentage: 5,
     reward_text: "",
@@ -57,7 +50,7 @@ export function RewardManager({
     });
   };
 
-  const validateReward = (reward: Reward): boolean => {
+  const validateReward = (reward: RewardInsert): boolean => {
     if (reward.reward_type === "cashback") {
       return (
         reward.percentage !== undefined &&

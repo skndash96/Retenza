@@ -22,17 +22,17 @@ export async function GET(_req: NextRequest) {
         cl: customerLoyalty,
       })
       .from(customers)
-      .innerJoin(customerLoyalty, eq(customerLoyalty.customer_id, customers.id))
-      .where(eq(customerLoyalty.business_id, businessId))
-      .orderBy(desc(customerLoyalty.updated_at));
+      .innerJoin(customerLoyalty, eq(customerLoyalty.customerId, customers.id))
+      .where(eq(customerLoyalty.businessId, businessId))
+      .orderBy(desc(customerLoyalty.updatedAt));
 
     // Get transaction counts
     const lastWeekCountResult = await db
       .select({ count: count() })
       .from(transactions)
       .where(and(
-        eq(transactions.business_id, businessId),
-        gte(transactions.created_at, lastWeekDate)
+        eq(transactions.businessId, businessId),
+        gte(transactions.createdAt, lastWeekDate)
       ));
     const lastWeekCount = Number(lastWeekCountResult[0]?.count ?? 0);
 
@@ -40,20 +40,20 @@ export async function GET(_req: NextRequest) {
       .select({ count: count() })
       .from(transactions)
       .where(and(
-        eq(transactions.business_id, businessId),
-        gte(transactions.created_at, lastMonthDate)
+        eq(transactions.businessId, businessId),
+        gte(transactions.createdAt, lastMonthDate)
       ));
     const lastMonthCount = Number(lastMonthCountResult[0]?.count ?? 0);
 
     // Get revenue data
     const revenueResult = await db
       .select({
-        totalRevenue: sum(transactions.bill_amount),
-        totalPoints: sum(transactions.points_awarded),
-        avgBillAmount: sql<number>`AVG(${transactions.bill_amount})`
+        totalRevenue: sum(transactions.billAmount),
+        totalPoints: sum(transactions.pointsAwarded),
+        avgBillAmount: sql<number>`AVG(${transactions.billAmount})`
       })
       .from(transactions)
-      .where(eq(transactions.business_id, businessId));
+      .where(eq(transactions.businessId, businessId));
 
     // Get mission statistics
     const totalMissionsResult = await db
@@ -61,7 +61,7 @@ export async function GET(_req: NextRequest) {
         totalMissions: count()
       })
       .from(missions)
-      .where(eq(missions.business_id, businessId));
+      .where(eq(missions.businessId, businessId));
 
     const activeMissionsResult = await db
       .select({
@@ -69,8 +69,8 @@ export async function GET(_req: NextRequest) {
       })
       .from(missions)
       .where(and(
-        eq(missions.business_id, businessId),
-        eq(missions.is_active, true)
+        eq(missions.businessId, businessId),
+        eq(missions.isActive, true)
       ));
 
     // Get customer retention metrics
@@ -83,8 +83,8 @@ export async function GET(_req: NextRequest) {
       })
       .from(transactions)
       .where(and(
-        eq(transactions.business_id, businessId),
-        gte(transactions.created_at, thirtyDaysAgo)
+        eq(transactions.businessId, businessId),
+        gte(transactions.createdAt, thirtyDaysAgo)
       ));
 
     // Get customer acquisition data
@@ -99,8 +99,8 @@ export async function GET(_req: NextRequest) {
       })
       .from(customerLoyalty)
       .where(and(
-        eq(customerLoyalty.business_id, businessId),
-        gte(customerLoyalty.created_at, sevenDaysAgo)
+        eq(customerLoyalty.businessId, businessId),
+        gte(customerLoyalty.createdAt, sevenDaysAgo)
       ));
 
     const monthResult = await db
@@ -109,8 +109,8 @@ export async function GET(_req: NextRequest) {
       })
       .from(customerLoyalty)
       .where(and(
-        eq(customerLoyalty.business_id, businessId),
-        gte(customerLoyalty.created_at, lastMonthDate)
+        eq(customerLoyalty.businessId, businessId),
+        gte(customerLoyalty.createdAt, lastMonthDate)
       ));
 
     const quarterResult = await db
@@ -119,19 +119,19 @@ export async function GET(_req: NextRequest) {
       })
       .from(customerLoyalty)
       .where(and(
-        eq(customerLoyalty.business_id, businessId),
-        gte(customerLoyalty.created_at, ninetyDaysAgo)
+        eq(customerLoyalty.businessId, businessId),
+        gte(customerLoyalty.createdAt, ninetyDaysAgo)
       ));
 
     // Get top customers
     const topCustomersResult = await db
       .select({
-        customer_id: customerLoyalty.customer_id,
+        customer_id: customerLoyalty.customerId,
         points: customerLoyalty.points,
-        tier: customerLoyalty.current_tier_name
+        tier: customerLoyalty.currentTierName
       })
       .from(customerLoyalty)
-      .where(eq(customerLoyalty.business_id, businessId))
+      .where(eq(customerLoyalty.businessId, businessId))
       .orderBy(desc(customerLoyalty.points))
       .limit(10);
 
@@ -139,14 +139,14 @@ export async function GET(_req: NextRequest) {
     const recentTransactionsResult = await db
       .select({
         id: transactions.id,
-        customer_id: transactions.customer_id,
-        bill_amount: transactions.bill_amount,
-        points_awarded: transactions.points_awarded,
-        created_at: transactions.created_at
+        customer_id: transactions.customerId,
+        bill_amount: transactions.billAmount,
+        points_awarded: transactions.pointsAwarded,
+        created_at: transactions.createdAt
       })
       .from(transactions)
-      .where(eq(transactions.business_id, businessId))
-      .orderBy(desc(transactions.created_at))
+      .where(eq(transactions.businessId, businessId))
+      .orderBy(desc(transactions.createdAt))
       .limit(10);
 
     // Get business profile information
@@ -154,8 +154,8 @@ export async function GET(_req: NextRequest) {
       .select({
         name: businesses.name,
         description: businesses.description,
-        logo_url: businesses.logo_url,
-        business_type: businesses.business_type
+        logoUrl: businesses.logoUrl,
+        businessType: businesses.businessType
       })
       .from(businesses)
       .where(eq(businesses.id, businessId))
@@ -181,8 +181,8 @@ export async function GET(_req: NextRequest) {
       businessProfile: {
         name: businessProfile?.name ?? '',
         description: businessProfile?.description ?? '',
-        logo_url: businessProfile?.logo_url ?? '',
-        business_type: businessProfile?.business_type ?? ''
+        logo_url: businessProfile?.logoUrl ?? '',
+        business_type: businessProfile?.businessType ?? ''
       }
     });
   } catch (error) {

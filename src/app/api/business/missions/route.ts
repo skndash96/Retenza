@@ -14,24 +14,24 @@ export async function GET(_req: NextRequest) {
     const rows = await db
       .select()
       .from(missions)
-      .where(eq(missions.business_id, businessUser.id))
-      .orderBy(desc(missions.created_at));
+      .where(eq(missions.businessId, businessUser.id))
+      .orderBy(desc(missions.createdAt));
 
     const formatted = rows.map((mission) => ({
       id: mission.id,
       title: mission.title ? String(mission.title) : "",
       description: mission.description ? String(mission.description) : "",
       offer: mission.offer || "",
-      expires_at: mission.expires_at,
-      applicable_tiers: Array.isArray(mission.applicable_tiers)
-        ? mission.applicable_tiers.map((t) =>
+      expiresAt: mission.expiresAt,
+      applicableTiers: Array.isArray(mission.applicableTiers)
+        ? mission.applicableTiers.map((t) =>
           t && typeof t === "object" && "name" in t ? String((t as { name: string }).name) : String(t)
         )
         : [],
       filters: mission.filters ?? {},
-      is_active: mission.is_active,
-      created_at: mission.created_at,
-      updated_at: mission.updated_at,
+      isActive: mission.isActive,
+      createdAt: mission.createdAt,
+      updatedAt: mission.updatedAt,
     }));
 
     return NextResponse.json(formatted);
@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
       title?: string;
       description?: string;
       offer?: string;
-      expires_at?: string;
-      applicable_tiers?: string[];
+      expiresAt?: string;
+      applicableTiers?: string[];
       filters?: {
         gender?: ('Male' | 'Female' | 'Other')[];
         age_range?: { min: number; max: number };
@@ -62,21 +62,21 @@ export async function POST(req: NextRequest) {
       };
     };
 
-    if (!body.title || !body.description || !body.offer || !body.expires_at) {
+    if (!body.title || !body.description || !body.offer || !body.expiresAt) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
     const inserted = await db
       .insert(missions)
       .values({
-        business_id: businessUser.id,
+        businessId: businessUser.id,
         title: String(body.title),
         description: String(body.description),
         offer: String(body.offer),
-        applicable_tiers: Array.isArray(body.applicable_tiers) ? body.applicable_tiers.map(String) : [],
+        applicableTiers: Array.isArray(body.applicableTiers) ? body.applicableTiers.map(String) : [],
         filters: body.filters ?? {},
-        is_active: true,
-        expires_at: new Date(body.expires_at),
+        isActive: true,
+        expiresAt: new Date(body.expiresAt),
       })
       .returning();
 
@@ -142,7 +142,7 @@ export async function PUT(req: NextRequest) {
     const updated = await db
       .update(missions)
       .set(updateData)
-      .where(and(eq(missions.id, body.id), eq(missions.business_id, businessUser.id)))
+      .where(and(eq(missions.id, body.id), eq(missions.businessId, businessUser.id)))
       .returning();
 
     if (updated.length === 0) {
@@ -170,7 +170,7 @@ export async function DELETE(req: NextRequest) {
 
     const deleted = await db
       .delete(missions)
-      .where(and(eq(missions.id, body.id), eq(missions.business_id, businessUser.id)))
+      .where(and(eq(missions.id, body.id), eq(missions.businessId, businessUser.id)))
       .returning();
 
     if (deleted.length === 0) {

@@ -19,18 +19,7 @@ import {
     Trash2
 } from "lucide-react";
 import { toast } from "react-toastify";
-
-interface Business {
-    id: number;
-    name: string;
-    phone_number: string;
-    business_type: string;
-    address: string;
-    description: string;
-    approved: boolean;
-    created_at: string;
-    is_setup_complete: boolean;
-}
+import { Business } from "@/server/db/schema";
 
 export default function AdminDashboardPage() {
     const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -86,8 +75,8 @@ export default function AdminDashboardPage() {
         if (searchTerm) {
             filtered = filtered.filter(b =>
                 b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                b.business_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                b.phone_number.includes(searchTerm)
+                b.businessType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                b.phoneNumber.includes(searchTerm)
             );
         }
 
@@ -153,7 +142,7 @@ export default function AdminDashboardPage() {
         const total = businesses.length;
         const pending = businesses.filter(b => !b.approved).length;
         const approved = businesses.filter(b => b.approved).length;
-        const setupComplete = businesses.filter(b => b.is_setup_complete).length;
+        const setupComplete = businesses.filter(b => b.isSetupComplete).length;
 
         return { total, pending, approved, setupComplete };
     };
@@ -326,7 +315,7 @@ export default function AdminDashboardPage() {
                                                                 <Badge variant={business.approved ? "default" : "secondary"}>
                                                                     {business.approved ? "Approved" : "Pending Approval"}
                                                                 </Badge>
-                                                                {business.is_setup_complete && (
+                                                                {business.isSetupComplete && (
                                                                     <Badge variant="outline" className="text-green-600 border-green-600">
                                                                         Setup Complete
                                                                     </Badge>
@@ -337,13 +326,13 @@ export default function AdminDashboardPage() {
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                                                         <div>
-                                                            <p><strong>Business Type:</strong> {business.business_type || "Not specified"}</p>
-                                                            <p><strong>Phone:</strong> {business.phone_number}</p>
+                                                            <p><strong>Business Type:</strong> {business.businessType || "Not specified"}</p>
+                                                            <p><strong>Phone:</strong> {business.phoneNumber}</p>
                                                             <p><strong>Address:</strong> {business.address || "Not specified"}</p>
                                                         </div>
                                                         <div>
                                                             <p><strong>Description:</strong> {business.description || "No description"}</p>
-                                                            <p><strong>Created:</strong> {new Date(business.created_at).toLocaleDateString()}</p>
+                                                            <p><strong>Created:</strong> {new Date(business.createdAt).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -375,7 +364,7 @@ export default function AdminDashboardPage() {
                                                                 Approved
                                                             </Badge>
                                                             <p className="text-xs text-gray-500">
-                                                                Approved on {new Date(business.created_at).toLocaleDateString()}
+                                                                Approved on {new Date(business.createdAt).toLocaleDateString()}
                                                             </p>
                                                             <Button
                                                                 onClick={() => handleDelete(business.id)}

@@ -15,29 +15,29 @@ export async function GET(_req: NextRequest) {
     const allActiveMissions = await db
       .select({
         id: missions.id,
-        business_id: missions.business_id,
+        businessId: missions.businessId,
         title: missions.title,
         description: missions.description,
         offer: missions.offer,
-        applicable_tiers: missions.applicable_tiers,
-        expires_at: missions.expires_at,
+        applicableTiers: missions.applicable_tiers,
+        expiresAt: missions.expiresAt,
         filters: missions.filters,
-        business_name: businesses.name,
-        business_address: businesses.address,
+        businessName: businesses.name,
+        businessAddress: businesses.address,
       })
       .from(missions)
-      .innerJoin(businesses, eq(missions.business_id, businesses.id))
+      .innerJoin(businesses, eq(missions.businessId, businesses.id))
       .where(and(
-        sql`${missions.expires_at} > now()`,
-        eq(missions.is_active, true)
+        sql`${missions.expiresAt} > now()`,
+        eq(missions.isActive, true)
       ));
 
     // Get customer's completed missions to filter them out
     const completedMissions = await db
-      .select({ mission_id: missionRegistry.mission_id })
+      .select({ mission_id: missionRegistry.missionId })
       .from(missionRegistry)
       .where(and(
-        eq(missionRegistry.customer_id, sessionUser.id),
+        eq(missionRegistry.customerId, sessionUser.id),
         eq(missionRegistry.status, 'completed')
       ));
 
@@ -46,19 +46,19 @@ export async function GET(_req: NextRequest) {
     const eligibleMissions = [];
 
     const customerLoyaltyRecords = await db.select().from(customerLoyalty)
-      .where(eq(customerLoyalty.customer_id, sessionUser.id));
+      .where(eq(customerLoyalty.customerId, sessionUser.id));
 
-    const loyaltyMap = new Map(customerLoyaltyRecords.map(rec => [rec.business_id, rec]));
+    const loyaltyMap = new Map(customerLoyaltyRecords.map(rec => [rec.businessId, rec]));
 
     for (const mission of allActiveMissions) {
       let isEligible = false;
-      if (mission.applicable_tiers.includes('all')) {
+      if (mission.applicableTiers.includes('all')) {
         isEligible = true;
       }
       else {
-        const loyaltyRecord = loyaltyMap.get(mission.business_id);
-        if (loyaltyRecord?.current_tier_name) {
-          if (mission.applicable_tiers.includes(loyaltyRecord.current_tier_name)) {
+        const loyaltyRecord = loyaltyMap.get(mission.businessId);
+        if (loyaltyRecord?.currentTierName) {
+          if (mission.applicableTiers.includes(loyaltyRecord.currentTierName)) {
             isEligible = true;
           }
         }
@@ -78,12 +78,12 @@ export async function GET(_req: NextRequest) {
     }>();
 
     for (const mission of eligibleMissions) {
-      const companyKey = mission.business_id;
+      const companyKey = mission.businessId;
       if (!missionsByCompany.has(companyKey)) {
         missionsByCompany.set(companyKey, {
-          business_id: mission.business_id,
-          business_name: mission.business_name,
-          business_address: mission.business_address ?? '',
+          business_id: mission.businessId,
+          business_name: mission.businessName,
+          business_address: mission.businessAddress ?? '',
           missions: []
         });
       }

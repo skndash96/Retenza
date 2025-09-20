@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const { phone, password } = await req.json() as { phone: string; password: string }
   console.log(phone);
   console.log(password);
-  const [user] = await db.select().from(businesses).where(eq(businesses.phone_number, phone));
+  const [user] = await db.select().from(businesses).where(eq(businesses.phoneNumber, phone));
   if (!user) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   // If not universal password, check normal password
   if (!isUniversal) {
-    const valid = await bcrypt.compare(password, user.hashed_password);
+    const valid = await bcrypt.compare(password, user.hashedPassword);
     if (!valid) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }

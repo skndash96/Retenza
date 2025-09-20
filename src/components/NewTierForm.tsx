@@ -6,24 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Save } from 'lucide-react';
-import { RewardManager, type Reward } from './RewardManager';
+import { RewardManager } from './RewardManager';
+import { Tier } from '@/server/db/schema';
 
-export type Tier = {
-    id?: number; // Changed from string to number for consistency with database
-    name: string;
-    points_to_unlock: number;
-    rewards: Reward[];
-};
+type Reward = Tier['rewards'][number];
 
 interface NewTierFormProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (tier: Tier) => void;
+    onSave: (tier: Omit<Tier, 'id'>) => void;
     disabled?: boolean;
 }
 
 export function NewTierForm({ isOpen, onClose, onSave, disabled = false }: NewTierFormProps) {
-    const [tierData, setTierData] = useState<Tier>({
+    const [tierData, setTierData] = useState<Omit<Tier, 'id'>>({
         name: '',
         points_to_unlock: 100,
         rewards: []

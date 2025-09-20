@@ -12,10 +12,10 @@ export async function GET(_req: NextRequest) {
     const allBusinesses = await db.select({
       id: businesses.id,
       name: businesses.name,
-      business_type: businesses.business_type,
+      businessType: businesses.businessType,
       address: businesses.address,
-      gmap_link: businesses.gmap_link,
-      logo_url: businesses.logo_url,
+      gmapLink: businesses.gmapLink,
+      logoUrl: businesses.logoUrl,
     }).from(businesses);
 
     return NextResponse.json(allBusinesses);
