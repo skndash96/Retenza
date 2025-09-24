@@ -1,10 +1,13 @@
 // Standalone Service Worker for Retenza PWA
 // This handles both caching and push notifications
 
-const CACHE_NAME = 'retenza-v1';
-const STATIC_CACHE = 'retenza-static-v1';
-const DYNAMIC_CACHE = 'retenza-dynamic-v1';
-const NOTIFICATION_CACHE = 'retenza-notifications-v1';
+// Increment this version to invalidate old caches
+const version = 2
+
+const CACHE_NAME = `retenza-${version.toString}`;
+const STATIC_CACHE = `retenza-static-v${version.toString()}`;
+const DYNAMIC_CACHE = `retenza-dynamic-v${version.toString()}`;
+const NOTIFICATION_CACHE = `retenza-notifications-v${version.toString()}`;
 
 // Install event - cache static assets
 self.addEventListener('install', function (event) {
@@ -12,7 +15,6 @@ self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(STATIC_CACHE).then(function (cache) {
       return cache.addAll([
-        '/',
         '/icon-192.png',
         '/icon-512.png',
         '/manifest.json'
@@ -71,7 +73,7 @@ self.addEventListener('fetch', function (event) {
           return caches.match(request);
         })
     );
-  } else if (url.pathname === '/' || url.pathname.startsWith('/static/')) {
+  } else if (url.pathname.startsWith('/static/')) {
     // Cache first for static content
     event.respondWith(
       caches.match(request).then(response => {
