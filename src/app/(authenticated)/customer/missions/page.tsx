@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
-import { useAuthSession } from '@/hooks/useAuthSession';
-import { toast } from 'react-toastify';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { toast } from "react-toastify";
 import {
   Search,
   Building2,
@@ -23,10 +29,15 @@ import {
   Filter,
   Grid3X3,
   List,
-  MoreVertical
-} from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import MissionExplanation from '@/components/MissionExplaination';
+  MoreVertical,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import MissionExplanation from "@/components/MissionExplaination";
 
 interface Mission {
   id: number;
@@ -37,7 +48,7 @@ interface Mission {
   applicable_tiers: string[];
   expires_at: string;
   filters: {
-    gender?: ('Male' | 'Female' | 'Other')[];
+    gender?: ("Male" | "Female" | "Other")[];
     age_range?: { min: number; max: number };
     location?: string[];
     customer_type?: string[];
@@ -49,7 +60,7 @@ interface Mission {
 interface MissionRegistry {
   id: number;
   mission_id: number;
-  status: 'in_progress' | 'completed' | 'failed';
+  status: "in_progress" | "completed" | "failed";
   started_at: string;
   completed_at?: string;
   discount_amount: string;
@@ -79,21 +90,21 @@ export default function CustomerMissionsPage() {
 
   const [companyMissions, setCompanyMissions] = useState<CompanyMissions[]>([]);
   const [missionProgress, setMissionProgress] = useState<MissionRegistry[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [missionsLoading, setMissionsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
-    if (!loading && (!user || role !== 'user')) {
-      toast.info('Please log in to view your missions.');
-      router.push('/login/customer');
+    if (!loading && (!user || role !== "user")) {
+      toast.info("Please log in to view your missions.");
+      router.push("/login/customer");
     }
   }, [loading, user, role, router]);
 
   useEffect(() => {
-    if (user && role === 'user') {
+    if (user && role === "user") {
       void fetchAvailableMissions();
       void fetchMissionProgress();
     }
@@ -102,16 +113,18 @@ export default function CustomerMissionsPage() {
   const fetchAvailableMissions = async () => {
     setMissionsLoading(true);
     try {
-      const response = await fetch('/api/customer/missions');
+      const response = await fetch("/api/customer/missions");
       if (!response.ok) {
-        throw new Error('Failed to fetch missions.');
+        throw new Error("Failed to fetch missions.");
       }
       const data = await response.json();
 
       setCompanyMissions(data);
     } catch (error) {
-      console.error('Error fetching missions:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch missions.');
+      console.error("Error fetching missions:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to fetch missions.",
+      );
     } finally {
       setMissionsLoading(false);
     }
@@ -119,23 +132,23 @@ export default function CustomerMissionsPage() {
 
   const fetchMissionProgress = async () => {
     try {
-      const response = await fetch('/api/customer/mission-registry');
+      const response = await fetch("/api/customer/mission-registry");
       if (!response.ok) {
-        throw new Error('Failed to fetch mission progress.');
+        throw new Error("Failed to fetch mission progress.");
       }
       const data = await response.json();
       setMissionProgress(data.registries ?? []);
     } catch (error) {
-      console.error('Failed to fetch mission progress:', error);
+      console.error("Failed to fetch mission progress:", error);
     }
   };
 
   const cancelMission = async (mission: Mission) => {
     try {
       const response = await fetch(`/api/customer/mission-registry`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           business_id: mission.business_id,
@@ -145,23 +158,24 @@ export default function CustomerMissionsPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error ?? 'Failed to cancel mission.');
+        throw new Error(errorData.error ?? "Failed to cancel mission.");
       }
 
-      toast.success('Mission cancelled successfully.');
+      toast.success("Mission cancelled successfully.");
       void fetchMissionProgress();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel mission';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to cancel mission";
       toast.error(errorMessage);
     }
-  }
+  };
 
   const startMission = async (mission: Mission) => {
     try {
-      const response = await fetch('/api/customer/mission-registry', {
-        method: 'POST',
+      const response = await fetch("/api/customer/mission-registry", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           mission_id: mission.id,
@@ -171,79 +185,93 @@ export default function CustomerMissionsPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error ?? 'Failed to start mission.');
+        throw new Error(errorData.error ?? "Failed to start mission.");
       }
 
-      toast.success('Mission started successfully!');
+      toast.success("Mission started successfully!");
       void fetchMissionProgress();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start mission';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to start mission";
       toast.error(errorMessage);
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'in_progress':
-        return <Clock className="w-3 h-3" />;
-      case 'completed':
-        return <CheckCircle className="w-3 h-3" />;
-      case 'failed':
-        return <XCircle className="w-3 h-3" />;
+      case "in_progress":
+        return <Clock className="h-3 w-3" />;
+      case "completed":
+        return <CheckCircle className="h-3 w-3" />;
+      case "failed":
+        return <XCircle className="h-3 w-3" />;
       default:
-        return <Clock className="w-3 h-3" />;
+        return <Clock className="h-3 w-3" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   // Flatten all missions into a single array with progress info
-  const allMissions: MissionWithProgress[] = (companyMissions || []).flatMap(company =>
-    (company.missions || []).map(mission => {
-      const progress = missionProgress.find(p => p.mission_id === mission.id);
-      return {
-        ...mission,
-        progress,
-        company
-      };
-    })
+  const allMissions: MissionWithProgress[] = (companyMissions || []).flatMap(
+    (company) =>
+      (company.missions || []).map((mission) => {
+        const progress = missionProgress.find(
+          (p) => p.mission_id === mission.id,
+        );
+        return {
+          ...mission,
+          progress,
+          company,
+        };
+      }),
   );
 
-
-
   // Filter missions based on search and company
-  const filteredMissions = allMissions.filter(mission => {
-    const matchesSearch = (mission.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (mission.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (mission.business_name || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCompany = selectedCompany === 'all' || mission.business_name === selectedCompany;
+  const filteredMissions = allMissions.filter((mission) => {
+    const matchesSearch =
+      (mission.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (mission.description || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (mission.business_name || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    const matchesCompany =
+      selectedCompany === "all" || mission.business_name === selectedCompany;
     return matchesSearch && matchesCompany;
   });
 
   // Group missions by status for better organization
-  const availableMissions = filteredMissions.filter(m => !m.progress);
-  const inProgressMissions = filteredMissions.filter(m => m.progress?.status === 'in_progress');
-  const completedMissions = filteredMissions.filter(m => m.progress?.status === 'completed');
+  const availableMissions = filteredMissions.filter((m) => !m.progress);
+  const inProgressMissions = filteredMissions.filter(
+    (m) => m.progress?.status === "in_progress",
+  );
+  const completedMissions = filteredMissions.filter(
+    (m) => m.progress?.status === "completed",
+  );
 
   if (loading || missionsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto py-8 px-4">
-          <div className="flex justify-center items-center h-64">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex h-64 items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-xl text-gray-700">Loading your mission dashboard...</p>
+              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+              <p className="text-xl text-gray-700">
+                Loading your mission dashboard...
+              </p>
             </div>
           </div>
         </div>
@@ -254,10 +282,10 @@ export default function CustomerMissionsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto py-8 px-4">
-          <div className="flex justify-center items-center h-64">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex h-64 items-center justify-center">
             <div className="text-center">
-              <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <XCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
               <p className="text-xl text-red-600">Error: {error}</p>
               <Button onClick={() => window.location.reload()} className="mt-4">
                 Try Again
@@ -269,87 +297,146 @@ export default function CustomerMissionsPage() {
     );
   }
 
-  if (!user || role !== 'user') {
+  if (!user || role !== "user") {
     return null;
   }
 
-  const MissionCard = ({ mission, isProgress = false }: { mission: MissionWithProgress; isProgress?: boolean }) => {
+  const MissionCard = ({
+    mission,
+    isProgress = false,
+  }: {
+    mission: MissionWithProgress;
+    isProgress?: boolean;
+  }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-      <Card className={`border-2 hover:shadow-lg transition-all duration-300 ${isProgress ? 'border-blue-200' : 'border-gray-200 hover:border-blue-300'
-        }`}>
+      <Card
+        className={`border-2 transition-all duration-300 hover:shadow-lg ${
+          isProgress
+            ? "border-blue-200"
+            : "border-gray-200 hover:border-blue-300"
+        }`}
+      >
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between mb-2">
+          <div className="mb-2 flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">{mission.business_name}</span>
+              <Building2 className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-600">
+                {mission.business_name}
+              </span>
             </div>
             {isProgress && mission.progress && (
               <Badge className={getStatusColor(mission.progress.status)}>
                 {getStatusIcon(mission.progress.status)}
-                <span className="ml-1 capitalize">{mission.progress.status.replace('_', ' ')}</span>
+                <span className="ml-1 capitalize">
+                  {mission.progress.status.replace("_", " ")}
+                </span>
               </Badge>
             )}
           </div>
 
-          <CardTitle className="text-lg font-semibold text-gray-800 line-clamp-2">
+          <CardTitle className="line-clamp-2 text-lg font-semibold text-gray-800">
             {mission.title}
           </CardTitle>
 
-          <CardDescription className="text-gray-600">
-            {isExpanded ? mission.description : mission.description.split(/\s+/).slice(0, 20).join(' ')}
-            {isExpanded ? null : mission.description.split(/\s+/).length > 20 ? '...' : ''}
+          {/* <CardDescription className="text-gray-600">
+            {isExpanded
+              ? mission.description
+              : mission.description.split(/\s+/).slice(0, 20).join(" ")}
+            {isExpanded
+              ? null
+              : mission.description.split(/\s+/).length > 20
+                ? "..."
+                : ""}
             {mission.description.split(/\s+/).length > 20 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-xs ml-1 text-blue-600 hover:underline focus:outline-none"
+                className="ml-1 text-xs text-blue-600 hover:underline focus:outline-none"
               >
-                {isExpanded ? 'Show Less' : 'Show More'}
+                {isExpanded ? "Show Less" : "Show More"}
               </button>
             )}
+          </CardDescription> */}
+          <CardDescription className="text-gray-600">
+            {(() => {
+              const descItems = mission.description
+                .split(",")
+                .map((item) => item.trim());
+              return (
+                <>
+                  <ul className="list-disc pl-5 text-xs text-gray-600">
+                    {(isExpanded ? descItems : descItems.slice(0, 2)).map(
+                      (item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ),
+                    )}
+                  </ul>
+                  {descItems.length > 2 && (
+                    <button
+                      className="mt-1 block text-left text-xs text-blue-600 hover:underline focus:outline-none"
+                      onClick={() => setIsExpanded((prev) => !prev)}
+                      type="button"
+                    >
+                      {isExpanded
+                        ? "View less"
+                        : `View more (${descItems.length - 2} more)`}
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
-            <Gift className="w-4 h-4 text-green-600" />
-            <Badge className="bg-green-100 text-green-800 text-xs font-medium text-wrap">
+            <Gift className="h-4 w-4 text-green-600" />
+            <Badge className="text-wrap bg-green-100 text-xs font-medium text-green-800">
               {mission.offer}
             </Badge>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar className="w-4 h-4" />
-            <span>Expires: {new Date(mission.expires_at).toLocaleDateString()}</span>
+            <Calendar className="h-4 w-4" />
+            <span>
+              Expires: {new Date(mission.expires_at).toLocaleDateString()}
+            </span>
           </div>
 
           {!isProgress && !mission.progress ? (
             <Button
               onClick={() => startMission(mission)}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 rounded-xl transition-all duration-300"
+              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-2 font-semibold text-white transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
             >
-              <PlayCircle className="w-4 h-4 mr-2" />
+              <PlayCircle className="mr-2 h-4 w-4" />
               Start Mission
             </Button>
-          ) : mission.progress?.status === 'completed' ? (
-            <Button disabled className="w-full bg-green-100 text-green-800 font-semibold py-2 rounded-xl">
-              <CheckCircle className="w-4 h-4 mr-2" />
+          ) : mission.progress?.status === "completed" ? (
+            <Button
+              disabled
+              className="w-full rounded-xl bg-green-100 py-2 font-semibold text-green-800"
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
               Completed
             </Button>
-          ) : mission.progress?.status === 'in_progress' ? (
-            <Button asChild disabled className="w-full bg-blue-100 hover:bg-blue-100 text-blue-800 font-semibold py-2 rounded-xl">
-              <div className='flex items-center'>
-                <span className='flex grow items-center'>
-                  <Clock className="w-4 h-4 mr-2 inline-block" />
+          ) : mission.progress?.status === "in_progress" ? (
+            <Button
+              asChild
+              disabled
+              className="w-full rounded-xl bg-blue-100 py-2 font-semibold text-blue-800 hover:bg-blue-100"
+            >
+              <div className="flex items-center">
+                <span className="flex grow items-center">
+                  <Clock className="mr-2 inline-block h-4 w-4" />
                   In Progress
                 </span>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger>
-                    <MoreVertical className="w-4 h-4 ml-4 inline-block" />
+                    <MoreVertical className="ml-4 inline-block h-4 w-4" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className='bg-white'>
+                  <DropdownMenuContent className="bg-white">
                     <DropdownMenuItem onClick={() => cancelMission(mission)}>
                       Quit
                     </DropdownMenuItem>
@@ -360,17 +447,17 @@ export default function CustomerMissionsPage() {
           ) : null}
         </CardContent>
       </Card>
-    )
+    );
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto px-4 py-8">
         {/* Compact Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-purple-600" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <Sparkles className="h-6 w-6 text-purple-600" />
+            <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
               Mission Dashboard
             </h1>
           </div>
@@ -378,20 +465,20 @@ export default function CustomerMissionsPage() {
           {/* View Mode Toggle */}
           <div className="flex items-center gap-2">
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
-              onClick={() => setViewMode('grid')}
+              onClick={() => setViewMode("grid")}
               className="h-8 w-8 p-0"
             >
-              <Grid3X3 className="w-4 h-4" />
+              <Grid3X3 className="h-4 w-4" />
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
+              variant={viewMode === "list" ? "default" : "outline"}
               size="sm"
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
               className="h-8 w-8 p-0"
             >
-              <List className="w-4 h-4" />
+              <List className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -399,28 +486,31 @@ export default function CustomerMissionsPage() {
         <MissionExplanation />
 
         {/* Smart Search and Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
                 placeholder="Search missions, companies, or descriptions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-10 border border-gray-200 focus:border-blue-500 rounded-lg"
+                className="h-10 rounded-lg border border-gray-200 pl-9 focus:border-blue-500"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="h-4 w-4 text-gray-500" />
               <select
                 value={selectedCompany}
                 onChange={(e) => setSelectedCompany(e.target.value)}
-                className="h-10 px-3 border border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+                className="h-10 rounded-lg border border-gray-200 px-3 text-sm focus:border-blue-500 focus:outline-none"
               >
                 <option value="all">All Companies</option>
-                {(companyMissions || []).map(company => (
-                  <option key={company.business_id} value={company.business_name}>
+                {(companyMissions || []).map((company) => (
+                  <option
+                    key={company.business_id}
+                    value={company.business_name}
+                  >
                     {company.business_name}
                   </option>
                 ))}
@@ -430,39 +520,45 @@ export default function CustomerMissionsPage() {
         </div>
 
         {/* Mission Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Target className="w-5 h-5 text-blue-600" />
+              <div className="rounded-lg bg-blue-100 p-2">
+                <Target className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Available</p>
-                <p className="text-2xl font-bold text-gray-800">{availableMissions.length}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {availableMissions.length}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Clock className="w-5 h-5 text-blue-600" />
+              <div className="rounded-lg bg-blue-100 p-2">
+                <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-800">{inProgressMissions.length}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {inProgressMissions.length}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+              <div className="rounded-lg bg-green-100 p-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-800">{completedMissions.length}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {completedMissions.length}
+                </p>
               </div>
             </div>
           </div>
@@ -473,16 +569,23 @@ export default function CustomerMissionsPage() {
           {/* In Progress Missions */}
           {inProgressMissions.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
                 Active Missions ({inProgressMissions.length})
               </h2>
-              <div className={`grid gap-4 ${viewMode === 'grid'
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                : 'grid-cols-1'
-                }`}>
-                {inProgressMissions.map(mission => (
-                  <MissionCard key={mission.id} mission={mission} isProgress={true} />
+              <div
+                className={`grid gap-4 ${
+                  viewMode === "grid"
+                    ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    : "grid-cols-1"
+                }`}
+              >
+                {inProgressMissions.map((mission) => (
+                  <MissionCard
+                    key={mission.id}
+                    mission={mission}
+                    isProgress={true}
+                  />
                 ))}
               </div>
             </div>
@@ -491,15 +594,18 @@ export default function CustomerMissionsPage() {
           {/* Available Missions */}
           {availableMissions.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-purple-600" />
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                <Target className="h-5 w-5 text-purple-600" />
                 Available Missions ({availableMissions.length})
               </h2>
-              <div className={`grid gap-4 ${viewMode === 'grid'
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                : 'grid-cols-1'
-                }`}>
-                {availableMissions.map(mission => (
+              <div
+                className={`grid gap-4 ${
+                  viewMode === "grid"
+                    ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    : "grid-cols-1"
+                }`}
+              >
+                {availableMissions.map((mission) => (
                   <MissionCard key={mission.id} mission={mission} />
                 ))}
               </div>
@@ -509,16 +615,23 @@ export default function CustomerMissionsPage() {
           {/* Completed Missions */}
           {completedMissions.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                <CheckCircle className="h-5 w-5 text-green-600" />
                 Completed Missions ({completedMissions.length})
               </h2>
-              <div className={`grid gap-4 ${viewMode === 'grid'
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                : 'grid-cols-1'
-                }`}>
-                {completedMissions.map(mission => (
-                  <MissionCard key={mission.id} mission={mission} isProgress={true} />
+              <div
+                className={`grid gap-4 ${
+                  viewMode === "grid"
+                    ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    : "grid-cols-1"
+                }`}
+              >
+                {completedMissions.map((mission) => (
+                  <MissionCard
+                    key={mission.id}
+                    mission={mission}
+                    isProgress={true}
+                  />
                 ))}
               </div>
             </div>
@@ -526,19 +639,27 @@ export default function CustomerMissionsPage() {
 
           {/* Empty State */}
           {filteredMissions.length === 0 && (
-            <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
-              <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <div className="rounded-2xl bg-white py-16 text-center shadow-sm">
+              <Target className="mx-auto mb-4 h-16 w-16 text-gray-300" />
               {missionsLoading ? (
                 <p className="text-xl text-gray-500">Loading missions...</p>
               ) : companyMissions.length === 0 ? (
                 <>
-                  <p className="text-xl text-gray-500">No missions available yet.</p>
-                  <p className="text-gray-400">Businesses need to create missions first.</p>
+                  <p className="text-xl text-gray-500">
+                    No missions available yet.
+                  </p>
+                  <p className="text-gray-400">
+                    Businesses need to create missions first.
+                  </p>
                 </>
               ) : (
                 <>
-                  <p className="text-xl text-gray-500">No missions found matching your criteria.</p>
-                  <p className="text-gray-400">Try adjusting your search or filters.</p>
+                  <p className="text-xl text-gray-500">
+                    No missions found matching your criteria.
+                  </p>
+                  <p className="text-gray-400">
+                    Try adjusting your search or filters.
+                  </p>
                 </>
               )}
             </div>
