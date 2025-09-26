@@ -458,7 +458,7 @@ export default function CustomerDashboard() {
                         <div className='flex items-center'>
                           <span className='flex grow items-center'>
                             <Clock className="w-4 h-4 mr-2 inline-block" />
-                            In Progress
+                            Show this screen to redeem
                           </span>
 
                           <DropdownMenu>
@@ -488,7 +488,7 @@ export default function CustomerDashboard() {
                         ) : (
                           <>
                             <Target className="w-3 h-3 mr-1" />
-                            Start Mission
+                            Show and claim
                           </>
                         )}
                       </Button>
