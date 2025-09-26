@@ -246,7 +246,7 @@ export default function CustomerDashboard() {
               company.missions.map((mission) => ({
                 ...mission,
                 business_name: company.business_name,
-                business_region: company.business_region || ""
+                business_region: company.business_region ?? ""
               }))
             );
             console.log('Flattened missions:', allMissions);
