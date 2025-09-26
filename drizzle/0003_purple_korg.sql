@@ -1,1 +1,0 @@
-ALTER TABLE "businesses" ADD COLUMN "is_setup_complete" boolean DEFAULT false;

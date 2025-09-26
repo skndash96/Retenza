@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthSession } from "@/hooks/useAuthSession";
-import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
 import {
   TrendingUp,
   Store,
@@ -45,6 +45,7 @@ interface Mission {
   offer: string;
   business_name: string;
   business_id: number;
+  business_region: string | null;
 }
 
 interface QuickStats {
@@ -54,7 +55,6 @@ interface QuickStats {
 }
 
 function pickTopMissions(allMissions: Mission[], count = 3): Mission[] {
-  // Group missions by business_id and pick one random mission per shop
   const missionsByShop = new Map<number, Mission[]>();
   allMissions.forEach((mission) => {
     if (!missionsByShop.has(mission.business_id)) {
@@ -63,14 +63,12 @@ function pickTopMissions(allMissions: Mission[], count = 3): Mission[] {
     missionsByShop.get(mission.business_id)!.push(mission);
   });
 
-  // Pick one random mission per shop
   const uniqueMissions: Mission[] = [];
   missionsByShop.forEach((missions) => {
     const randomIdx = Math.floor(Math.random() * missions.length);
     uniqueMissions.push(missions[randomIdx]);
   });
 
-  // Shuffle and pick up to `count` missions
   const shuffled = uniqueMissions.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
@@ -79,7 +77,15 @@ export default function CustomerDashboard() {
   const { user, role, loading: authLoading } = useAuthSession();
   const router = useRouter();
   const [shops, setShops] = useState<Shop[]>([]);
-  const [topMissions, setTopMissions] = useState<Mission[]>([]);
+  const [allMissions, setAllMissions] = useState<Mission[]>([]);
+  const [topMissions, nittMissions] = useMemo(() => {
+    const topMissions: Mission[] = [], nittMissions: Mission[] = []
+    allMissions.forEach(mission => {
+      if (mission.business_region?.toLowerCase().includes("nit trichy")) nittMissions.push(mission)
+      else topMissions.push(mission)
+    })
+    return [pickTopMissions(topMissions), nittMissions]
+  }, [allMissions])
   const [showAllDesc, setShowAllDesc] = useState<Record<string, boolean>>({});
 
   const [quickStats, setQuickStats] = useState<QuickStats>({
@@ -180,9 +186,8 @@ export default function CustomerDashboard() {
             business_name: company.business_name,
           })),
         );
-        console.log("Refreshed flattened missions:", allMissions);
-        // setTopMissions(allMissions.slice(0, 3));
-        setTopMissions(pickTopMissions(allMissions));
+        console.log('Refreshed flattened missions:', allMissions);
+        setAllMissions(allMissions)
       }
 
       // Refresh completed missions count
@@ -228,23 +233,24 @@ export default function CustomerDashboard() {
           // Fetch top missions
           const missionsResponse = await fetch("/api/customer/missions");
           if (missionsResponse.ok) {
-            const missionsData = (await missionsResponse.json()) as {
+            const missionsData = await missionsResponse.json() as {
               business_id: number;
               business_name: string;
               business_address: string;
-              missions: Mission[];
+              business_region: string | null,
+              missions: Mission[]
             }[];
-            console.log("Raw missions data:", missionsData);
+            console.log('Raw missions data:', missionsData);
             // Flatten missions from all businesses and take top 3
             const allMissions = missionsData.flatMap((company) =>
               company.missions.map((mission) => ({
                 ...mission,
                 business_name: company.business_name,
-              })),
+                business_region: company.business_region || ""
+              }))
             );
-            console.log("Flattened missions:", allMissions);
-            // setTopMissions(allMissions.slice(0, 3));
-            setTopMissions(pickTopMissions(allMissions));
+            console.log('Flattened missions:', allMissions);
+            setAllMissions(allMissions);
           }
 
           // Fetch mission registry data (completed and ongoing)
@@ -419,7 +425,7 @@ export default function CustomerDashboard() {
                   className="border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
                   onClick={() => router.push(`/customer/shops/${shop.shopId}`)}
                 >
-                  <CardHeader className="pb-3">
+                  <CardHeader>
                     <div className="flex items-center justify-between">
                       <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 border-blue-200">
                         #{index + 1}
@@ -467,6 +473,108 @@ export default function CustomerDashboard() {
           )}
         </motion.div> */}
 
+        {/* NITT Missions Section */}
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={fadeUp}
+          transition={{ delay: 0.3 }}
+          className="mb-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-fuchsia-500" />
+              NIT Trichy Missions
+            </h2>
+            <Button
+              onClick={() => router.push('/customer/missions/nitt')}
+              variant="outline"
+              size="sm"
+              className="border-blue-200 text-white bg-blue-600 hover:bg-blue-500"
+            >
+              View All
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+
+          {nittMissions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {nittMissions.slice(0,3).map((mission, index) => (
+                <Card key={mission.id} className="border border-gray-200 hover:border-fuchsia-300 hover:shadow-md transition-all duration-200 group">
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="secondary" className="text-xs bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200">
+                        #{index + 1}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs text-fuchsia-600 border-red-200">
+                        Limited Time
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-sm font-semibold text-gray-800 group-hover:text-fuchsia-600 transition-colors line-clamp-2">
+                      {mission.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-xs text-gray-600 line-clamp-2">{mission.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-green-600">{mission.offer}</span>
+                      <span className="text-xs text-gray-500">{mission.business_name}</span>
+                    </div>
+
+                    {ongoingMissions.has(mission.id) ? (
+                      <Button asChild className="w-full bg-gray-400 hover:bg-gray-400 text-white text-xs">
+                        <div className='flex items-center'>
+                          <span className='flex grow items-center'>
+                            <Clock className="w-4 h-4 mr-2 inline-block" />
+                            Show this screen to redeem
+                          </span>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <MoreVertical className="w-4 h-4 ml-4 inline-block" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className='bg-white'>
+                              <DropdownMenuItem onClick={() => cancelMission(mission)}>
+                                Quit
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => startMission(mission.id, mission.business_id)}
+                        disabled={startingMission === mission.id}
+                        size="sm"
+                        className="w-full bg-purple-500 hover:bg-purple-600 text-white text-xs"
+                      >
+                        {startingMission === mission.id ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            Starting...
+                          </>
+                        ) : (
+                          <>
+                            <Target className="w-3 h-3 mr-1" />
+                            Show and Claim
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="border-2 border-dashed border-gray-300 bg-gray-50">
+              <CardContent className="p-6 text-center">
+                <Target className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">No missions available yet. Check back soon!</p>
+              </CardContent>
+            </Card>
+          )}
+        </motion.div>
+
         {/* Top Missions Section */}
         <motion.div
           initial="hidden"
@@ -478,13 +586,13 @@ export default function CustomerDashboard() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
               <Flame className="h-5 w-5 text-orange-500" />
-              Top Missions
+              Trichy Missions
             </h2>
             <Button
               onClick={() => router.push("/customer/missions")}
               variant="outline"
               size="sm"
-              className="border-blue-200 text-blue-600 hover:bg-blue-50"
+              className="border-blue-200 text-white bg-blue-600 hover:bg-blue-500"
             >
               View All
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -499,7 +607,7 @@ export default function CustomerDashboard() {
                   key={mission.id}
                   className="group flex flex-col md:h-full border border-gray-200 transition-all duration-200 hover:border-orange-300 hover:shadow-md"
                 >
-                  <CardHeader className="pb-3">
+                  <CardHeader>
                     <div className="mb-2 flex items-center justify-between">
                       <Badge
                         variant="secondary"
@@ -529,7 +637,7 @@ export default function CustomerDashboard() {
                           .map((item) => item.trim());
                         const isExpanded = showAllDesc[mission.id];
                         return (
-                          <>
+                          <div className='mb-4'>
                             <ul className="list-disc pl-5 text-xs text-gray-600">
                               {(isExpanded
                                 ? descItems
@@ -540,7 +648,7 @@ export default function CustomerDashboard() {
                             </ul>
                             {descItems.length > 2 && (
                               <button
-                                className="my-2 text-xs font-semibold text-orange-600 text-left hover:underline"
+                                className="ml-5 text-xs font-semibold text-orange-600 text-left hover:underline"
                                 onClick={() =>
                                   setShowAllDesc((prev) => ({
                                     ...prev,
@@ -554,7 +662,7 @@ export default function CustomerDashboard() {
                                   : `View more (${descItems.length - 2} more)`}
                               </button>
                             )}
-                          </>
+                          </div>
                         );
                       })()}
                       <div className="flex items-center justify-between">

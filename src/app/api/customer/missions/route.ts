@@ -24,6 +24,7 @@ export async function GET(_req: NextRequest) {
         filters: missions.filters,
         business_name: businesses.name,
         business_address: businesses.address,
+        business_region: businesses.region,
       })
       .from(missions)
       .innerJoin(businesses, eq(missions.business_id, businesses.id))
@@ -74,6 +75,7 @@ export async function GET(_req: NextRequest) {
       business_id: number;
       business_name: string;
       business_address: string;
+      business_region: string;
       missions: typeof eligibleMissions;
     }>();
 
@@ -84,6 +86,7 @@ export async function GET(_req: NextRequest) {
           business_id: mission.business_id,
           business_name: mission.business_name,
           business_address: mission.business_address ?? '',
+          business_region: mission.business_region ?? '',
           missions: []
         });
       }

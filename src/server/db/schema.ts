@@ -28,6 +28,7 @@ export const businesses = pgTable("businesses", {
   email: varchar("email", { length: 255 }),
   contact_number: varchar("contact_number", { length: 20 }),
   contact_number_2: varchar("contact_number_2", { length: 20 }),
+  region: varchar("region", { length: 100 }),
   gmap_link: varchar("gmap_link", { length: 500 }),
   logo_url: varchar("logo_url", { length: 500 }),
   additional_info: jsonb("additional_info").$type<Record<string, any>>().default({}),
@@ -82,6 +83,8 @@ export const loyaltyPrograms = pgTable("loyalty_programs", {
   points_rate: integer("points_rate").default(1).notNull(),
   description: text("description"),
   tiers: jsonb("tiers").$type<Tier[]>().notNull().default([]),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // ====================================================================================
@@ -152,7 +155,7 @@ export const rewardRedemptions = pgTable("reward_redemptions", {
 });
 
 // ====================================================================================
-// F. Sessions
+// G. Sessions
 // ====================================================================================
 
 export const sessions = pgTable("sessions", {
@@ -163,7 +166,7 @@ export const sessions = pgTable("sessions", {
 });
 
 // ====================================================================================
-// G. Push Notifications
+// H. Push Notifications
 // ====================================================================================
 
 export const pushSubscriptions = pgTable("push_subscriptions", {
@@ -191,7 +194,26 @@ export const notifications = pgTable("notifications", {
 });
 
 // ====================================================================================
-// H. Drizzle Relations 
+// I. Mission Registry
+// ====================================================================================
+
+export const missionRegistry = pgTable("mission_registry", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  mission_id: integer("mission_id").notNull(),
+  business_id: integer("business_id").notNull(),
+  status: text("status").notNull().$type<'in_progress' | 'completed' | 'failed'>(),
+  started_at: timestamp("started_at").defaultNow(),
+  completed_at: timestamp("completed_at"),
+  discount_amount: decimal("discount_amount", { precision: 10, scale: 2 }).default('0'),
+  discount_percentage: decimal("discount_percentage", { precision: 5, scale: 2 }).default('0'),
+  notes: text("notes"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ====================================================================================
+// J. Drizzle Relations 
 // ====================================================================================
 
 export const businessRelations = relations(businesses, ({ one, many }) => ({
@@ -283,18 +305,6 @@ export const notificationRelations = relations(notifications, ({ one }) => ({
     references: [businesses.id],
   }),
 }));
-export const missionRegistry = pgTable("mission_registry", {
-  id: serial("id").primaryKey(),
-  customer_id: integer("customer_id").notNull(),
-  mission_id: integer("mission_id").notNull(),
-  business_id: integer("business_id").notNull(),
-  status: text("status").notNull().$type<'in_progress' | 'completed' | 'failed'>(),
-  started_at: timestamp("started_at").defaultNow(),
-  completed_at: timestamp("completed_at"),
-  discount_amount: decimal("discount_amount", { precision: 10, scale: 2 }).default('0'),
-  discount_percentage: decimal("discount_percentage", { precision: 5, scale: 2 }).default('0'),
-  notes: text("notes"),
-});
 
 export const missionRegistryRelations = relations(missionRegistry, ({ one }) => ({
   customer: one(customers, {
@@ -315,6 +325,7 @@ export const schema = {
   businesses,
   customers,
   loyaltyPrograms,
+  customerLoyalty,
   missions,
   transactions,
   rewardRedemptions,
@@ -323,4 +334,3 @@ export const schema = {
   notifications,
   missionRegistry,
 };
-

@@ -1,1 +1,0 @@
-ALTER TABLE "businesses" RENAME COLUMN "contact_number_1" TO "contact_number_2";

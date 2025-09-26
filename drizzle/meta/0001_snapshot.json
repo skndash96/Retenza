@@ -1,6 +1,6 @@
 {
-  "id": "84e3dba3-fa39-4a74-9fb7-b7f487a204f1",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "e23ca879-d362-4b0c-bf13-7b9a37e0c219",
+  "prevId": "84e3dba3-fa39-4a74-9fb7-b7f487a204f1",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -65,6 +65,12 @@
         "contact_number_2": {
           "name": "contact_number_2",
           "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "region": {
+          "name": "region",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },

@@ -33,6 +33,7 @@ interface BusinessProfile {
     contact_number_2?: string;
     gmap_link?: string;
     logo_url?: string;
+    region?: string;
     additional_info?: Record<string, {
         label: string;
         type: string;
@@ -79,6 +80,7 @@ export default function BusinessProfilePage() {
         { key: 'contact_number', label: 'Primary Phone', type: 'tel', placeholder: 'Primary contact number', required: false, category: 'contact' },
         { key: 'contact_number_2', label: 'Secondary Phone', type: 'tel', placeholder: 'Secondary contact number', required: false, category: 'contact' },
         { key: 'gmap_link', label: 'Google Maps Link', type: 'url', placeholder: 'Google Maps URL for your business location', required: false, category: 'contact' },
+        { key: 'region', label: 'Region', type: 'text', placeholder: 'Geographical region of your business', required: false, category: 'contact' },
 
         // Business Details
         { key: 'logo_url', label: 'Company Logo', type: 'url', placeholder: 'GCP bucket URL for your company logo', required: false, category: 'details' },

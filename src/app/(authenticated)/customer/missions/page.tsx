@@ -76,6 +76,7 @@ interface CompanyMissions {
   business_id: number;
   business_name: string;
   business_address: string;
+  business_region: string;
   missions: Mission[];
 }
 
@@ -117,9 +118,11 @@ export default function CustomerMissionsPage() {
       if (!response.ok) {
         throw new Error("Failed to fetch missions.");
       }
-      const data = await response.json();
+      const data = await response.json() as CompanyMissions[];
 
-      setCompanyMissions(data);
+      setCompanyMissions(
+        data.filter(mission => !mission.business_region.toLowerCase().includes("nit trichy"))
+      );
     } catch (error) {
       console.error("Error fetching missions:", error);
       setError(
@@ -409,8 +412,8 @@ export default function CustomerMissionsPage() {
               onClick={() => startMission(mission)}
               className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-2 font-semibold text-white transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
             >
-              <PlayCircle className="mr-2 h-4 w-4" />
-              Start Mission
+              <PlayCircle className="w-4 h-4 mr-2" />
+              Show and Claim
             </Button>
           ) : mission.progress?.status === "completed" ? (
             <Button

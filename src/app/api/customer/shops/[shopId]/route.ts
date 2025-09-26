@@ -30,6 +30,7 @@ export async function GET(
         address: businesses.address,
         gmap_link: businesses.gmap_link,
         logo_url: businesses.logo_url,
+        region: businesses.region,
         loyaltyProgramId: loyaltyPrograms.id,
         pointsRate: loyaltyPrograms.points_rate,
         description: loyaltyPrograms.description,
@@ -72,6 +73,7 @@ export async function GET(
         address: shopData.address,
         gmap_link: shopData.gmap_link,
         logo_url: shopData.logo_url,
+        region: shopData.region,
       },
       loyaltyProgram: shopData.loyaltyProgramId
         ? {

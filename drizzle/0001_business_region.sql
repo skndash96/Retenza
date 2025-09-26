@@ -1,0 +1,1 @@
+ALTER TABLE "businesses" ADD COLUMN "region" varchar(100);

@@ -26,6 +26,7 @@ export async function GET() {
                 gmap_link: businesses.gmap_link,
                 logo_url: businesses.logo_url,
                 additional_info: businesses.additional_info,
+                region: businesses.region,
             })
             .from(businesses)
             .where(eq(businesses.id, business.id))
@@ -66,7 +67,8 @@ export async function PATCH(request: NextRequest) {
             'email',
             'gmap_link',
             'logo_url',
-            'additional_info'
+            'additional_info',
+            'region'
         ];
 
         // Filter out invalid fields
@@ -104,6 +106,7 @@ export async function PATCH(request: NextRequest) {
                 gmap_link: businesses.gmap_link,
                 logo_url: businesses.logo_url,
                 additional_info: businesses.additional_info,
+                region: businesses.region,
             });
 
         if (updatedBusiness.length === 0) {

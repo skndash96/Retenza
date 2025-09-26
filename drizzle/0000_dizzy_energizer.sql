@@ -1,4 +1,4 @@
-CREATE TABLE "businesses" (
+CREATE TABLE IF NOT EXISTS "businesses" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"phone_number" varchar(20) NOT NULL,
 	"hashed_password" text NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE "businesses" (
 	CONSTRAINT "businesses_phone_number_unique" UNIQUE("phone_number")
 );
 --> statement-breakpoint
-CREATE TABLE "customer_loyalty" (
+CREATE TABLE IF NOT EXISTS "customer_loyalty" (
 	"customer_id" integer NOT NULL,
 	"business_id" integer NOT NULL,
 	"points" integer DEFAULT 0 NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE "customer_loyalty" (
 	CONSTRAINT "customer_loyalty_customer_id_business_id_pk" PRIMARY KEY("customer_id","business_id")
 );
 --> statement-breakpoint
-CREATE TABLE "customers" (
+CREATE TABLE IF NOT EXISTS "customers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"phone_number" varchar(20) NOT NULL,
 	"hashed_password" text NOT NULL,
@@ -45,16 +45,18 @@ CREATE TABLE "customers" (
 	CONSTRAINT "customers_phone_number_unique" UNIQUE("phone_number")
 );
 --> statement-breakpoint
-CREATE TABLE "loyalty_programs" (
+CREATE TABLE IF NOT EXISTS "loyalty_programs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"business_id" integer NOT NULL,
 	"points_rate" integer DEFAULT 1 NOT NULL,
 	"description" text,
 	"tiers" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "loyalty_programs_business_id_unique" UNIQUE("business_id")
 );
 --> statement-breakpoint
-CREATE TABLE "mission_registry" (
+CREATE TABLE IF NOT EXISTS "mission_registry" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"customer_id" integer NOT NULL,
 	"mission_id" integer NOT NULL,
@@ -64,10 +66,12 @@ CREATE TABLE "mission_registry" (
 	"completed_at" timestamp,
 	"discount_amount" numeric(10, 2) DEFAULT '0',
 	"discount_percentage" numeric(5, 2) DEFAULT '0',
-	"notes" text
+	"notes" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "missions" (
+CREATE TABLE IF NOT EXISTS "missions" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"business_id" integer NOT NULL,
 	"title" text NOT NULL,
@@ -81,7 +85,7 @@ CREATE TABLE "missions" (
 	"expires_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "notifications" (
+CREATE TABLE IF NOT EXISTS "notifications" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"customer_id" integer NOT NULL,
 	"business_id" integer NOT NULL,
@@ -94,7 +98,7 @@ CREATE TABLE "notifications" (
 	"read_at" timestamp
 );
 --> statement-breakpoint
-CREATE TABLE "push_subscriptions" (
+CREATE TABLE IF NOT EXISTS "push_subscriptions" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"customer_id" integer NOT NULL,
 	"business_id" integer NOT NULL,
@@ -105,7 +109,7 @@ CREATE TABLE "push_subscriptions" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "reward_redemptions" (
+CREATE TABLE IF NOT EXISTS "reward_redemptions" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"customer_id" integer NOT NULL,
 	"business_id" integer NOT NULL,
@@ -116,14 +120,14 @@ CREATE TABLE "reward_redemptions" (
 	"redeemed_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "sessions" (
+CREATE TABLE IF NOT EXISTS "sessions" (
 	"id" varchar(255) PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
 	"role" text NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "transactions" (
+CREATE TABLE IF NOT EXISTS "transactions" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"customer_id" integer NOT NULL,
 	"business_id" integer NOT NULL,

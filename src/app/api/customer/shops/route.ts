@@ -16,6 +16,7 @@ export async function GET(_req: NextRequest) {
       address: businesses.address,
       gmap_link: businesses.gmap_link,
       logo_url: businesses.logo_url,
+      region: businesses.region,
     }).from(businesses);
 
     return NextResponse.json(allBusinesses);
