@@ -53,6 +53,28 @@ interface QuickStats {
   missionsCompleted: number;
 }
 
+function pickTopMissions(allMissions: Mission[], count = 3): Mission[] {
+  // Group missions by business_id and pick one random mission per shop
+  const missionsByShop = new Map<number, Mission[]>();
+  allMissions.forEach((mission) => {
+    if (!missionsByShop.has(mission.business_id)) {
+      missionsByShop.set(mission.business_id, []);
+    }
+    missionsByShop.get(mission.business_id)!.push(mission);
+  });
+
+  // Pick one random mission per shop
+  const uniqueMissions: Mission[] = [];
+  missionsByShop.forEach((missions) => {
+    const randomIdx = Math.floor(Math.random() * missions.length);
+    uniqueMissions.push(missions[randomIdx]);
+  });
+
+  // Shuffle and pick up to `count` missions
+  const shuffled = uniqueMissions.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
 export default function CustomerDashboard() {
   const { user, role, loading: authLoading } = useAuthSession();
   const router = useRouter();
@@ -159,7 +181,8 @@ export default function CustomerDashboard() {
           })),
         );
         console.log("Refreshed flattened missions:", allMissions);
-        setTopMissions(allMissions.slice(0, 3));
+        // setTopMissions(allMissions.slice(0, 3));
+        setTopMissions(pickTopMissions(allMissions));
       }
 
       // Refresh completed missions count
@@ -220,7 +243,8 @@ export default function CustomerDashboard() {
               })),
             );
             console.log("Flattened missions:", allMissions);
-            setTopMissions(allMissions.slice(0, 3)); // Top 3 missions
+            // setTopMissions(allMissions.slice(0, 3));
+            setTopMissions(pickTopMissions(allMissions));
           }
 
           // Fetch mission registry data (completed and ongoing)
@@ -326,7 +350,7 @@ export default function CustomerDashboard() {
             Rewards &amp; Missions
           </h1>
           <p className="mx-auto max-w-xl text-base text-gray-600">
-            Discover shops, complete challenges, and grab your prizes.
+            Discover 10+ shops, complete challenges, and grab your prizes.
           </p>
         </motion.div>
 
@@ -514,7 +538,7 @@ export default function CustomerDashboard() {
                           </ul>
                           {descItems.length > 2 && (
                             <button
-                              className="mt-1 text-xs text-orange-600 hover:underline"
+                              className="mt-1 text-xs text-orange-600 font-semibold hover:underline"
                               onClick={() =>
                                 setShowAllDesc((prev) => ({
                                   ...prev,
