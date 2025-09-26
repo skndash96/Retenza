@@ -407,7 +407,7 @@ export default function BusinessMissionsPage() {
                 <Input placeholder="Description" value={newDescription || ""} onChange={e => setNewDescription(e.target.value)} />
                 <Input placeholder="Offer (e.g., 10% cashback, Free coffee, etc.)" value={newOffer || ""} onChange={e => setNewOffer(e.target.value)} />
 
-                <div className="border p-3 rounded">
+                {/* <div className="border p-3 rounded">
                   <label className="font-medium">Applicable Tiers:</label>
                   <div className="mt-2 space-y-2">
                     <label className="flex items-center gap-2">
@@ -426,9 +426,9 @@ export default function BusinessMissionsPage() {
                       </label>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
-                <div className="border p-3 rounded">
+                {/* <div className="border p-3 rounded">
                   <div className="flex justify-between items-center mb-2">
                     <label className="font-medium">Filters (Optional):</label>
                     <Select onValueChange={addFilter}>
@@ -553,7 +553,7 @@ export default function BusinessMissionsPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 <div className="flex items-center gap-2">
                   <Checkbox
