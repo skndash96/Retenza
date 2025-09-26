@@ -492,11 +492,12 @@ export default function CustomerDashboard() {
           </div>
 
           {topMissions.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            // <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:h-full">
               {topMissions.map((mission, index) => (
                 <Card
                   key={mission.id}
-                  className="group border border-gray-200 transition-all duration-200 hover:border-orange-300 hover:shadow-md"
+                  className="group flex flex-col md:h-full border border-gray-200 transition-all duration-200 hover:border-orange-300 hover:shadow-md"
                 >
                   <CardHeader className="pb-3">
                     <div className="mb-2 flex items-center justify-between">
@@ -517,100 +518,104 @@ export default function CustomerDashboard() {
                       {mission.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="flex flex-1 flex-col space-y-3 md:flex-1">
                     {/* <p className="line-clamp-2 text-xs text-gray-600">
                       {mission.description}
                     </p> */}
-                    {(() => {
-                      const descItems = mission.description
-                        .split(",")
-                        .map((item) => item.trim());
-                      const isExpanded = showAllDesc[mission.id];
-                      return (
-                        <>
-                          <ul className="list-disc pl-5 text-xs text-gray-600">
-                            {(isExpanded
-                              ? descItems
-                              : descItems.slice(0, 2)
-                            ).map((item, idx) => (
-                              <li key={idx}>{item}</li>
-                            ))}
-                          </ul>
-                          {descItems.length > 2 && (
-                            <button
-                              className="mt-1 text-xs text-orange-600 font-semibold hover:underline"
-                              onClick={() =>
-                                setShowAllDesc((prev) => ({
-                                  ...prev,
-                                  [mission.id]: !prev[mission.id],
-                                }))
-                              }
-                              type="button"
-                            >
-                              {isExpanded
-                                ? "View less"
-                                : `View more (${descItems.length - 2} more)`}
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-green-600">
-                        {mission.offer}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {mission.business_name}
-                      </span>
+                    <div className="flex flex-1 flex-col md:flex-1">
+                      {(() => {
+                        const descItems = mission.description
+                          .split(",")
+                          .map((item) => item.trim());
+                        const isExpanded = showAllDesc[mission.id];
+                        return (
+                          <>
+                            <ul className="list-disc pl-5 text-xs text-gray-600">
+                              {(isExpanded
+                                ? descItems
+                                : descItems.slice(0, 2)
+                              ).map((item, idx) => (
+                                <li key={idx}>{item}</li>
+                              ))}
+                            </ul>
+                            {descItems.length > 2 && (
+                              <button
+                                className="my-2 text-xs font-semibold text-orange-600 text-left hover:underline"
+                                onClick={() =>
+                                  setShowAllDesc((prev) => ({
+                                    ...prev,
+                                    [mission.id]: !prev[mission.id],
+                                  }))
+                                }
+                                type="button"
+                              >
+                                {isExpanded
+                                  ? "View less"
+                                  : `View more (${descItems.length - 2} more)`}
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-green-600">
+                          {mission.offer}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {mission.business_name}
+                        </span>
+                      </div>
                     </div>
 
-                    {ongoingMissions.has(mission.id) ? (
-                      <Button
-                        asChild
-                        className="w-full bg-gray-400 text-xs text-white hover:bg-gray-400"
-                      >
-                        <div className="flex items-center">
-                          <span className="flex grow items-center">
-                            <Clock className="mr-2 inline-block h-4 w-4" />
-                            Show this screen to redeem
-                          </span>
+                    <div className="mt-auto">
+                      {ongoingMissions.has(mission.id) ? (
+                        <Button
+                          asChild
+                          className="w-full bg-gray-400 text-xs text-white hover:bg-gray-400"
+                        >
+                          <div className="flex items-center">
+                            <span className="flex grow items-center">
+                              <Clock className="mr-2 inline-block h-4 w-4" />
+                              Show this screen to redeem
+                            </span>
 
-                          <DropdownMenu>
-                            <DropdownMenuTrigger>
-                              <MoreVertical className="ml-4 inline-block h-4 w-4" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="bg-white">
-                              <DropdownMenuItem
-                                onClick={() => cancelMission(mission)}
-                              >
-                                Quit
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() =>
-                          startMission(mission.id, mission.business_id)
-                        }
-                        disabled={startingMission === mission.id}
-                        size="sm"
-                        className="w-full bg-orange-600 text-xs text-white hover:bg-orange-700"
-                      >
-                        {startingMission === mission.id ? (
-                          <>
-                            <div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            Starting...
-                          </>
-                        ) : (
-                          <>
-                            <Target className="mr-1 h-3 w-3" />
-                            Show and claim
-                          </>
-                        )}
-                      </Button>
-                    )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger>
+                                <MoreVertical className="ml-4 inline-block h-4 w-4" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="bg-white">
+                                <DropdownMenuItem
+                                  onClick={() => cancelMission(mission)}
+                                >
+                                  Quit
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() =>
+                            startMission(mission.id, mission.business_id)
+                          }
+                          disabled={startingMission === mission.id}
+                          size="sm"
+                          className="w-full bg-orange-600 text-xs text-white hover:bg-orange-700"
+                        >
+                          {startingMission === mission.id ? (
+                            <>
+                              <div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Starting...
+                            </>
+                          ) : (
+                            <>
+                              <Target className="mr-1 h-3 w-3" />
+                              Show and claim
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
