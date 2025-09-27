@@ -432,7 +432,7 @@ export default function CustomerMissionsPage() {
               <div className="flex items-center">
                 <span className="flex grow items-center">
                   <Clock className="mr-2 inline-block h-4 w-4" />
-                  In Progress
+                  Show this screen to Redeem
                 </span>
 
                 <DropdownMenu>
