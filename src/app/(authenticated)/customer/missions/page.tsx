@@ -1,43 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { toast } from "react-toastify";
 import {
   Search,
-  Building2,
   Target,
   Clock,
-  Gift,
   CheckCircle,
-  PlayCircle,
   XCircle,
   TrendingUp,
-  Calendar,
   Sparkles,
   Filter,
   Grid3X3,
   List,
-  MoreVertical,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import MissionExplanation from "@/components/MissionExplaination";
+import MissionCard from "@/components/missions/MissionCard";
 
 interface Mission {
   id: number;
@@ -146,86 +128,6 @@ export default function CustomerMissionsPage() {
     }
   };
 
-  const cancelMission = async (mission: Mission) => {
-    try {
-      const response = await fetch(`/api/customer/mission-registry`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          business_id: mission.business_id,
-          mission_id: mission.id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error ?? "Failed to cancel mission.");
-      }
-
-      toast.success("Mission cancelled successfully.");
-      void fetchMissionProgress();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to cancel mission";
-      toast.error(errorMessage);
-    }
-  };
-
-  const startMission = async (mission: Mission) => {
-    try {
-      const response = await fetch("/api/customer/mission-registry", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mission_id: mission.id,
-          business_id: mission.business_id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error ?? "Failed to start mission.");
-      }
-
-      toast.success("Mission started successfully!");
-      void fetchMissionProgress();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to start mission";
-      toast.error(errorMessage);
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "in_progress":
-        return <Clock className="h-3 w-3" />;
-      case "completed":
-        return <CheckCircle className="h-3 w-3" />;
-      case "failed":
-        return <XCircle className="h-3 w-3" />;
-      default:
-        return <Clock className="h-3 w-3" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "in_progress":
-        return "bg-blue-100 text-blue-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "failed":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   // Flatten all missions into a single array with progress info
   const allMissions: MissionWithProgress[] = (companyMissions || []).flatMap(
     (company) =>
@@ -303,155 +205,6 @@ export default function CustomerMissionsPage() {
   if (!user || role !== "user") {
     return null;
   }
-
-  const MissionCard = ({
-    mission,
-    isProgress = false,
-  }: {
-    mission: MissionWithProgress;
-    isProgress?: boolean;
-  }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    return (
-      <Card
-        className={`border-2 transition-all duration-300 hover:shadow-lg ${
-          isProgress
-            ? "border-blue-200"
-            : "border-gray-200 hover:border-blue-300"
-        }`}
-      >
-        <CardHeader className="pb-3">
-          <div className="mb-2 flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">
-                {mission.business_name}
-              </span>
-            </div>
-            {isProgress && mission.progress && (
-              <Badge className={getStatusColor(mission.progress.status)}>
-                {getStatusIcon(mission.progress.status)}
-                <span className="ml-1 capitalize">
-                  {mission.progress.status.replace("_", " ")}
-                </span>
-              </Badge>
-            )}
-          </div>
-
-          <CardTitle className="line-clamp-2 text-lg font-semibold text-gray-800">
-            {mission.title}
-          </CardTitle>
-
-          {/* <CardDescription className="text-gray-600">
-            {isExpanded
-              ? mission.description
-              : mission.description.split(/\s+/).slice(0, 20).join(" ")}
-            {isExpanded
-              ? null
-              : mission.description.split(/\s+/).length > 20
-                ? "..."
-                : ""}
-            {mission.description.split(/\s+/).length > 20 && (
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="ml-1 text-xs text-blue-600 hover:underline focus:outline-none"
-              >
-                {isExpanded ? "Show Less" : "Show More"}
-              </button>
-            )}
-          </CardDescription> */}
-          <CardDescription className="text-gray-600">
-            {(() => {
-              const descItems = mission.description
-                .split(",")
-                .map((item) => item.trim());
-              return (
-                <>
-                  <ul className="list-disc pl-5 text-xs text-gray-600">
-                    {(isExpanded ? descItems : descItems.slice(0, 2)).map(
-                      (item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ),
-                    )}
-                  </ul>
-                  {descItems.length > 2 && (
-                    <button
-                      className="mt-1 block text-left text-xs text-blue-600 hover:underline focus:outline-none"
-                      onClick={() => setIsExpanded((prev) => !prev)}
-                      type="button"
-                    >
-                      {isExpanded
-                        ? "View less"
-                        : `View more (${descItems.length - 2} more)`}
-                    </button>
-                  )}
-                </>
-              );
-            })()}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Gift className="h-4 w-4 text-green-600" />
-            <Badge className="text-wrap bg-green-100 text-xs font-medium text-green-800">
-              {mission.offer}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar className="h-4 w-4" />
-            <span>
-              Expires: {new Date(mission.expires_at).toLocaleDateString()}
-            </span>
-          </div>
-
-          {!isProgress && !mission.progress ? (
-            <Button
-              onClick={() => startMission(mission)}
-              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-2 font-semibold text-white transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
-            >
-              <PlayCircle className="w-4 h-4 mr-2" />
-              Show and Claim
-            </Button>
-          ) : mission.progress?.status === "completed" ? (
-            <Button
-              disabled
-              className="w-full rounded-xl bg-green-100 py-2 font-semibold text-green-800"
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Completed
-            </Button>
-          ) : mission.progress?.status === "in_progress" ? (
-            <Button
-              asChild
-              disabled
-              className="w-full rounded-xl bg-blue-100 py-2 font-semibold text-blue-800 hover:bg-blue-100"
-            >
-              <div className="flex items-center">
-                <span className="flex grow items-center">
-                  <Clock className="mr-2 inline-block h-4 w-4" />
-                  In Progress
-                </span>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <MoreVertical className="ml-4 inline-block h-4 w-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-white">
-                    <DropdownMenuItem onClick={() => cancelMission(mission)}>
-                      Quit
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -585,6 +338,7 @@ export default function CustomerMissionsPage() {
               >
                 {inProgressMissions.map((mission) => (
                   <MissionCard
+                    fetchMissionProgress={fetchMissionProgress}
                     key={mission.id}
                     mission={mission}
                     isProgress={true}
@@ -609,7 +363,8 @@ export default function CustomerMissionsPage() {
                 }`}
               >
                 {availableMissions.map((mission) => (
-                  <MissionCard key={mission.id} mission={mission} />
+                  <MissionCard
+                    fetchMissionProgress={fetchMissionProgress} key={mission.id} mission={mission} />
                 ))}
               </div>
             </div>
@@ -631,6 +386,7 @@ export default function CustomerMissionsPage() {
               >
                 {completedMissions.map((mission) => (
                   <MissionCard
+                    fetchMissionProgress={fetchMissionProgress}
                     key={mission.id}
                     mission={mission}
                     isProgress={true}

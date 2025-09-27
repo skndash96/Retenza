@@ -1,32 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { toast } from 'react-toastify';
 import {
   Search,
-  Building2,
   Target,
   Clock,
-  Gift,
   CheckCircle,
-  PlayCircle,
   XCircle,
   TrendingUp,
-  Calendar,
   Sparkles,
   Filter,
   Grid3X3,
   List,
-  MoreVertical
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import MissionExplanation from '@/components/MissionExplaination';
+import MissionCard from '@/components/missions/MissionCard';
 
 interface Mission {
   id: number;
@@ -133,84 +126,6 @@ export default function CustomerMissionsPage() {
     }
   };
 
-  const cancelMission = async (mission: Mission) => {
-    try {
-      const response = await fetch(`/api/customer/mission-registry`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          business_id: mission.business_id,
-          mission_id: mission.id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error ?? 'Failed to cancel mission.');
-      }
-
-      toast.success('Mission cancelled successfully.');
-      void fetchMissionProgress();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel mission';
-      toast.error(errorMessage);
-    }
-  }
-
-  const startMission = async (mission: Mission) => {
-    try {
-      const response = await fetch('/api/customer/mission-registry', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mission_id: mission.id,
-          business_id: mission.business_id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error ?? 'Failed to start mission.');
-      }
-
-      toast.success('Mission started successfully!');
-      void fetchMissionProgress();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start mission';
-      toast.error(errorMessage);
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return <Clock className="w-3 h-3" />;
-      case 'completed':
-        return <CheckCircle className="w-3 h-3" />;
-      case 'failed':
-        return <XCircle className="w-3 h-3" />;
-      default:
-        return <Clock className="w-3 h-3" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   // Flatten all missions into a single array with progress info
   const allMissions: MissionWithProgress[] = (companyMissions || []).flatMap(company =>
     (company.missions || []).map(mission => {
@@ -276,95 +191,6 @@ export default function CustomerMissionsPage() {
     return null;
   }
 
-  const MissionCard = ({ mission, isProgress = false }: { mission: MissionWithProgress; isProgress?: boolean }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    return (
-      <Card className={`border-2 hover:shadow-lg transition-all duration-300 ${isProgress ? 'border-blue-200' : 'border-gray-200 hover:border-blue-300'
-        }`}>
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">{mission.business_name}</span>
-            </div>
-            {isProgress && mission.progress && (
-              <Badge className={getStatusColor(mission.progress.status)}>
-                {getStatusIcon(mission.progress.status)}
-                <span className="ml-1 capitalize">{mission.progress.status.replace('_', ' ')}</span>
-              </Badge>
-            )}
-          </div>
-
-          <CardTitle className="text-lg font-semibold text-gray-800 line-clamp-2">
-            {mission.title}
-          </CardTitle>
-
-          <CardDescription className="text-gray-600">
-            {isExpanded ? mission.description : mission.description.split(/\s+/).slice(0, 20).join(' ')}
-            {isExpanded ? null : mission.description.split(/\s+/).length > 20 ? '...' : ''}
-            {mission.description.split(/\s+/).length > 20 && (
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-xs ml-1 text-blue-600 hover:underline focus:outline-none"
-              >
-                {isExpanded ? 'Show Less' : 'Show More'}
-              </button>
-            )}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Gift className="w-4 h-4 text-green-600" />
-            <Badge className="bg-green-100 text-green-800 text-xs font-medium text-wrap">
-              {mission.offer}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar className="w-4 h-4" />
-            <span>Expires: {new Date(mission.expires_at).toLocaleDateString()}</span>
-          </div>
-
-          {!isProgress && !mission.progress ? (
-            <Button
-              onClick={() => startMission(mission)}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 rounded-xl transition-all duration-300"
-            >
-              <PlayCircle className="w-4 h-4 mr-2" />
-              Show and Claim
-            </Button>
-          ) : mission.progress?.status === 'completed' ? (
-            <Button disabled className="w-full bg-green-100 text-green-800 font-semibold py-2 rounded-xl">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Completed
-            </Button>
-          ) : mission.progress?.status === 'in_progress' ? (
-            <Button asChild disabled className="w-full bg-blue-100 hover:bg-blue-100 text-blue-800 font-semibold py-2 rounded-xl">
-              <div className='flex items-center'>
-                <span className='flex grow items-center'>
-                  <Clock className="w-4 h-4 mr-2 inline-block" />
-                  In Progress
-                </span>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <MoreVertical className="w-4 h-4 ml-4 inline-block" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className='bg-white'>
-                    <DropdownMenuItem onClick={() => cancelMission(mission)}>
-                      Quit
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
-    )
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -485,7 +311,7 @@ export default function CustomerMissionsPage() {
                 : 'grid-cols-1'
                 }`}>
                 {inProgressMissions.map(mission => (
-                  <MissionCard key={mission.id} mission={mission} isProgress={true} />
+                  <MissionCard fetchMissionProgress={fetchMissionProgress} key={mission.id} mission={mission} isProgress={true} />
                 ))}
               </div>
             </div>
@@ -503,7 +329,7 @@ export default function CustomerMissionsPage() {
                 : 'grid-cols-1'
                 }`}>
                 {availableMissions.map(mission => (
-                  <MissionCard key={mission.id} mission={mission} />
+                  <MissionCard fetchMissionProgress={fetchMissionProgress} key={mission.id} mission={mission} />
                 ))}
               </div>
             </div>
@@ -521,7 +347,7 @@ export default function CustomerMissionsPage() {
                 : 'grid-cols-1'
                 }`}>
                 {completedMissions.map(mission => (
-                  <MissionCard key={mission.id} mission={mission} isProgress={true} />
+                  <MissionCard fetchMissionProgress={fetchMissionProgress} key={mission.id} mission={mission} isProgress={true} />
                 ))}
               </div>
             </div>
